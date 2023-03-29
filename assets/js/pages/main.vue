@@ -1,15 +1,19 @@
 <template>
-    <div>Hi</div>
+    <div>
+        <the-header :title="title" />
+    </div>
 </template>
 
 <script lang="ts">
     import { defineComponent } from 'vue';
-    import Homepage from '@/js/pages/Homepage.vue';
+    import TheHeader from '@/js/components/TheHeader.vue';
+    import TripList from '@/js/pages/TripList.vue';
 
     export default defineComponent({
         name: 'Main',
         components: {
-            Homepage,
+            TheHeader,
+            TripList,
         },
         data() {
             return {

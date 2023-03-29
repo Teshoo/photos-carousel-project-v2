@@ -1,22 +1,17 @@
 <template>
     <div>
-        <the-header :title="title" />
+        Trips :
     </div>
 </template>
 
 <script lang="ts">
     import { defineComponent } from 'vue';
-    import TheHeader from '@/js/components/TheHeader.vue';
+    import TripCard from '@/js/components/TripCard.vue';
 
     export default defineComponent({
-        name: 'Homepage',
+        name: 'TripList',
         components: {
-            TheHeader
-        },
-        data() {
-            return {
-                title: 'Photo Carousel',
-            };
+            TripCard,
         },
     });
 </script>
