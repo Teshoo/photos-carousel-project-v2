@@ -1,22 +1,26 @@
 <template>
-    <div>Hi</div>
+    <div>
+        <the-header :title="title" />
+    </div>
 </template>
 
 <script lang="ts">
     import { defineComponent } from 'vue';
-    import Homepage from '@/js/pages/Homepage.vue';
+    import TheHeader from '@/js/components/TheHeader.vue';
 
     export default defineComponent({
-        name: 'Main',
+        name: 'Homepage',
         components: {
-            Homepage,
+            TheHeader
         },
         data() {
             return {
-                title: 'Korea trip\'s pictures',
+                title: 'Photo Carousel',
             };
         },
     });
 </script>
 
-<style></style>
+<style module>
+
+</style>
