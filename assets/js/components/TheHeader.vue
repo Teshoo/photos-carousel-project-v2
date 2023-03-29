@@ -1,8 +1,12 @@
 <template>
     <div>
         <div :class="$style.headerMenu">
-            <div :class="$style.homepageButton">
-                Picture Carousel
+            <div>
+                <router-link to="/">
+                    <div :class="$style.homepageButton">
+                        Picture Carousel
+                    </div>
+                </router-link>
             </div>
             <div>
                 <chevronUrl/>
@@ -55,7 +59,6 @@
         font-weight: 700;
         font-size: 25px;
         line-height: 35px;
-        color: #FFFFFF;
-        
+        color: #FFFFFF;        
     }
 </style>
