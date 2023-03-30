@@ -6,6 +6,6 @@
             "@/*": ["./assets/*"]
         },
     },
-    "include": ["assets/**/*", "assets/custom.d.ts"],
+    "include": ["assets/**/*", "assets/svg.d.ts", "assets/axios.d.ts"],
     "exclude": ["node_modules", "**/*.spec.ts"]
 }

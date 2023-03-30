@@ -2,6 +2,9 @@
     <div>
         <the-header :title="title" />
     </div>
+    <div>
+        <trip-list />
+    </div>
 </template>
 
 <script lang="ts">
@@ -17,7 +20,7 @@
         },
         data() {
             return {
-                title: 'Korea trip\'s pictures',
+                title: 'Picture Carousel',
             };
         },
     });

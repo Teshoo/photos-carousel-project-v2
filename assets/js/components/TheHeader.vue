@@ -4,7 +4,7 @@
             <div>
                 <router-link to="/">
                     <div :class="$style.homepageButton">
-                        Picture Carousel
+                        {{ title }}
                     </div>
                 </router-link>
             </div>
@@ -23,6 +23,9 @@
         name: 'TheHeader',
         components: {
             chevronUrl,
+        },
+        props: {
+            title: { type: String, required: true }
         },
     });
 </script>
