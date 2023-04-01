@@ -8,3 +8,11 @@ import axios from 'axios';
 export function fetchTrips() {
     return axios.get('/api/trips');
 }
+
+/**
+ * @param {number|null} tripId
+ * @returns {Promise}
+ */
+export function fetchTrip(tripId: Number) {
+    return axios.get('/api/trips/'+tripId);
+}

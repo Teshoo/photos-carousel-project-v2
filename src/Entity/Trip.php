@@ -6,15 +6,18 @@ use App\Repository\TripRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
 
 #[ORM\Entity(repositoryClass: TripRepository::class)]
 #[ApiResource(
     operations: [
         new Get(),
         new GetCollection(),
+        new Post(),
     ],
 )]
 class Trip
@@ -25,6 +28,12 @@ class Trip
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
+    #[Assert\Length(
+        min:5, 
+        max:20, 
+        minMessage:'The name is too short {{ limit }}', 
+        maxMessage:'The name is too long (20 characters max)')]
     private ?string $name = null;
 
     #[ORM\OneToMany(mappedBy: 'trip', targetEntity: TripStage::class)]
