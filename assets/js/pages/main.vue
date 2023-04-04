@@ -9,8 +9,12 @@
 
 <script lang="ts">
     import { defineComponent } from 'vue';
+    import { useTripStore } from '@/js/stores/TripStore';
     import TheHeader from '@/js/components/TheHeader.vue';
     import TripList from '@/js/pages/TripList.vue';
+
+    //const tripStore = useTripStore();
+    //tripStore.displayTrips();
 
     export default defineComponent({
         name: 'Main',

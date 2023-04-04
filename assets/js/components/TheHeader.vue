@@ -19,6 +19,12 @@
             <div>
                 <chevronUrl/>
             </div>
+            <div v-if="$route.params.tripId">
+                <select v-model="tripId">
+                <option :value="tripId">Please select one</option>
+                <option v-for="trip in trips" :key="trip[`@id`]">{{ trip.name }}</option>
+                </select>
+            </div>
         </div>
     </div>
 </template>
@@ -26,7 +32,10 @@
 <script lang="ts">
     import { defineComponent } from 'vue';
     import chevronUrl from '@/icons/chevron_breadcrumb.svg';
-    import homeIcon from '@/icons/home_icon.svg'
+    import homeIcon from '@/icons/home_icon.svg';
+    import { useTripStore } from '@/js/stores/TripStore';
+    import { mapState, mapStores, mapActions } from 'pinia';
+    
 
     export default defineComponent({
         name: 'TheHeader',
@@ -36,6 +45,18 @@
         },
         props: {
             title: { type: String, required: true }
+        },
+        data() {
+            return {
+                tripId: null as string|null,
+            }
+        },
+        created() {
+            this.TripStoreStore.browseTrips();
+        },
+        computed: {
+            ...mapState(useTripStore, ['trips']),
+            ...mapStores(useTripStore)
         },
     });
 </script>
