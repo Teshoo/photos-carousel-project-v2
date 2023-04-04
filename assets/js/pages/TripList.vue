@@ -7,10 +7,20 @@
             <div
                 v-for="trip in trips"
             >
-                <trip-card :trip="trip" /> 
+                <trip-card :trip="trip" :key="trip[`@id`]"/> 
             </div>
-            <div :class="$style.newTripCard">
-                <newTripIcon/>
+            <div 
+                :class="$style.newTripCard"
+                @click="addTrip"
+                @mouseover="hover = true"
+                @mouseleave="hover = false"
+            >
+                <div v-if="hover === false">
+                    <newTripIcon/>
+                </div>
+                <div v-if="hover === true">
+                    <newTripHoverIcon/>
+                </div>
             </div>
         </div>
     </div>
@@ -18,19 +28,24 @@
 
 <script lang="ts">
     import { defineComponent } from 'vue';
-    import { fetchTrips } from '@/js/services/trip-service';
+    import { fetchTrips, addTrip } from '@/js/services/trip-service';
+    import type { Trip } from '@/js/services/trip-service';
     import TripCard from '@/js/components/TripCard.vue';
     import newTripIcon from '@/icons/new_trip_icon.svg';
+    import newTripHoverIcon from '@/icons/new_trip_hover_icon.svg';
 
     export default defineComponent({
         name: 'TripList',
         components: {
             TripCard,
             newTripIcon,
+            newTripHoverIcon,
         },
         data() {
             return {
-                trips: [],
+                trips: {} as Array<Trip>,
+                newTrip: {} as Trip,
+                hover: false as Boolean,
             }
         },
         created() {
@@ -44,7 +59,17 @@
                 } catch (error) {
                     console.log('Something went wrong during trips loading');
                 }
-                
+            },
+            async addTrip() {
+                try {
+                    const response = await addTrip();
+                    this.newTrip = response.data;
+                    this.trips.push(this.newTrip);
+                    console.log(this.newTrip);
+                    console.log(this.trips)
+                } catch (error) {
+                    console.log('Something went wrong during the trip creation');
+                }
             }
         },
     });
@@ -82,5 +107,10 @@
         width: 300px;
         height: 150px;
 
+        cursor: pointer;
+
+    }
+    .test {
+        color: white;
     }
 </style>

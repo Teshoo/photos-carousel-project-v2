@@ -34,33 +34,17 @@
 
 <script lang="ts">
     import { defineComponent } from 'vue';
-    import type { PropType } from 'vue';
     import { fetchTrip, updateTrip } from '@/js/services/trip-service';
+    import type { Trip } from '@/js/services/trip-service';
     import { fetchStages } from '@/js/services/stage-service';
     import TripCard from '@/js/components/TripCard.vue';
     import newTripIcon from '@/icons/new_trip_icon.svg';
-
-    interface Trip {
-        '@context': string,
-        '@id': string,
-        '@type': string,
-        id: number,
-        name: string,
-        tripStages: Array<string>,
-        extras: Array<string>,
-    }
 
     export default defineComponent({
         name: 'TripList',
         components: {
             TripCard,
             newTripIcon,
-        },
-        prop: {
-            trips: {
-                    type: Object as PropType<Trip>,
-                    required: true,
-                }
         },
         data() {
             return {

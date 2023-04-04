@@ -1,6 +1,17 @@
 export {}
+export type { Trip }
 
 import axios from 'axios';
+
+interface Trip {
+    '@context': string,
+    '@id': string,
+    '@type': string,
+    id: number,
+    name: string,
+    tripStages: Array<string>,
+    extras: Array<string>,
+}
 
 /**
  * @returns {Promise}
@@ -15,6 +26,17 @@ export function fetchTrips() {
  */
 export function fetchTrip(tripId: Number) {
     return axios.get('/api/trips/'+tripId);
+}
+
+/**
+ * @returns {Promise}
+ */
+export function addTrip() {
+    const params: {[index: string]:any}= {};
+    params.name = 'New Trip';
+    params.tripStages = [];
+    params.extras = [];
+    return axios.post('/api/trips', params);
 }
 
 /**
