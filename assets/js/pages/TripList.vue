@@ -72,6 +72,7 @@
         grid-template-columns: 1fr 1fr 1fr;
         justify-content: space-evenly;
         justify-items: center;
+        gap: 50px;
     }
     .newTripCard {
         display: grid;

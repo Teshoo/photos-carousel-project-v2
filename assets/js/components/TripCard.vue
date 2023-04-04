@@ -1,7 +1,9 @@
 <template>
     <div :class="$style.card">
         <div :class="$style.editButton">
-            <editIcon/>
+            <router-link :to="'/edit/trip/' + trip.id">
+                <editIcon/>
+            </router-link>
         </div>
         <div :class="$style.tripName">
             {{ trip.name }}

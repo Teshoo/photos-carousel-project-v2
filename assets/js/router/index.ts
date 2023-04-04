@@ -1,8 +1,18 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import TripList from "@/js/pages/TripList.vue";
+import EditTrip from '@/js/pages/edit/EditTrip.vue';
 
 const routes = [
-    { path: '/', name: 'Trip List', component: TripList }
+    { 
+        path: '/', 
+        name: 'Trip List', 
+        component: TripList,
+    },
+    {
+        path: '/edit/trip/:id',
+        name: 'Edit Trip',
+        component: EditTrip,
+    },
 ]
 
 const router = createRouter({

@@ -45,7 +45,7 @@ class Picture
 
     #[ORM\ManyToOne(inversedBy: 'pictures')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?TripDay $TripDay = null;
+    private ?TripDay $tripDay = null;
 
     #[ORM\ManyToMany(targetEntity: Extra::class, inversedBy: 'pictures')]
     private Collection $extras;
@@ -155,12 +155,12 @@ class Picture
 
     public function getTripDay(): ?TripDay
     {
-        return $this->TripDay;
+        return $this->tripDay;
     }
 
-    public function setTripDay(?TripDay $TripDay): self
+    public function setTripDay(?TripDay $tripDay): self
     {
-        $this->TripDay = $TripDay;
+        $this->tripDay = $tripDay;
 
         return $this;
     }

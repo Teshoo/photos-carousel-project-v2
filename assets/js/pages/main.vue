@@ -3,7 +3,7 @@
         <the-header :title="title" />
     </div>
     <div>
-        <trip-list />
+        <router-view />
     </div>
 </template>
 

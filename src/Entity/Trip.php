@@ -11,6 +11,8 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Put;
 
 #[ORM\Entity(repositoryClass: TripRepository::class)]
 #[ApiResource(
@@ -18,6 +20,8 @@ use ApiPlatform\Metadata\Post;
         new Get(),
         new GetCollection(),
         new Post(),
+        new Patch(),
+        new Put(),
     ],
 )]
 class Trip
