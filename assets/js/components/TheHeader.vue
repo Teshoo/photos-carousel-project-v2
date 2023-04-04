@@ -4,7 +4,15 @@
             <div>
                 <router-link to="/">
                     <div :class="$style.homepageButton">
-                        {{ title }}
+                        <div v-if="$route.params.tripId">
+                            <homeIcon/>
+                        </div>
+                        <div 
+                            :class="$style.homepageButtonTitle" 
+                            v-if="!($route.params.tripId)
+                        ">
+                            {{ title }}
+                        </div>
                     </div>
                 </router-link>
             </div>
@@ -18,10 +26,12 @@
 <script lang="ts">
     import { defineComponent } from 'vue';
     import chevronUrl from '@/icons/chevron_breadcrumb.svg';
+    import homeIcon from '@/icons/home_icon.svg'
 
     export default defineComponent({
         name: 'TheHeader',
         components: {
+            homeIcon,
             chevronUrl,
         },
         props: {
@@ -45,9 +55,11 @@
         background-color: #FFAA1D;
     }
     .homepageButton {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
+        display: grid;
+        grid-template-columns: auto;
+        align-items: center;
+        align-content: center;
+        justify-items: center;
         justify-content: center;
 
         height: 50px;
@@ -56,12 +68,13 @@
         background-color: #FF5470;
         box-sizing: border-box;
         border: 3px solid #FFFFFF;
-        border-radius: 15px;
-
+        border-radius: 15px;       
+    }
+    .homepageButtonTitle {
         font-family: 'Comic Sans MS';
         font-weight: 700;
         font-size: 25px;
         line-height: 35px;
-        color: #FFFFFF;        
+        color: #FFFFFF; 
     }
 </style>

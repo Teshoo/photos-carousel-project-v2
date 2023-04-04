@@ -9,7 +9,7 @@ const routes = [
         component: TripList,
     },
     {
-        path: '/edit/trip/:id',
+        path: '/edit/trip/:tripId',
         name: 'Edit Trip',
         component: EditTrip,
     },

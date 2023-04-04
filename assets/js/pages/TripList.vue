@@ -65,8 +65,6 @@
                     const response = await addTrip();
                     this.newTrip = response.data;
                     this.trips.push(this.newTrip);
-                    console.log(this.newTrip);
-                    console.log(this.trips)
                 } catch (error) {
                     console.log('Something went wrong during the trip creation');
                 }
@@ -109,8 +107,5 @@
 
         cursor: pointer;
 
-    }
-    .test {
-        color: white;
     }
 </style>

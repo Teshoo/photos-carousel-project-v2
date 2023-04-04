@@ -56,7 +56,7 @@
             this.$watch(
                 () => this.$route.params,
                 () => {
-                    this.browseTrip(this.$route.params.id)
+                    this.browseTrip(this.$route.params.tripId)
                 },
                 { immediate: true }
             )
@@ -81,11 +81,9 @@
             }*/
             async updateTrip(iri: string) {
                 try {
-                    console.log(this.trip);
                     const response = await updateTrip(iri, this.trip);
                     this.trip = response.data;
                     this.tempTripName = this.trip.name;
-                    console.log(this.trip);
                 } catch (error) {
                     console.log('Something went wrong during the trip update');
                 }
