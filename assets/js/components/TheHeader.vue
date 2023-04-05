@@ -31,12 +31,11 @@
 
 <script lang="ts">
     import { defineComponent } from 'vue';
+    import { mapState, mapStores } from 'pinia';
+    import { useTripStore } from '@/js/stores/TripStore';
     import chevronUrl from '@/icons/chevron_breadcrumb.svg';
     import homeIcon from '@/icons/home_icon.svg';
-    import { useTripStore } from '@/js/stores/TripStore';
-    import { mapState, mapStores, mapActions } from 'pinia';
     
-
     export default defineComponent({
         name: 'TheHeader',
         components: {
@@ -52,7 +51,7 @@
             }
         },
         created() {
-            this.TripStoreStore.browseTrips();
+            this.TripStore.browseTrips();
         },
         computed: {
             ...mapState(useTripStore, ['trips']),

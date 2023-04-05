@@ -2,31 +2,31 @@
     <div :class="$style.container">
         <div 
             :class="$style.tripEdit"
-            v-if="trip"
+            v-if="currentTrip"
         >
             Trip : 
             <input 
                 :class="$style.tripNameInput"
                 type="text"
                 placeholder="trip name"
-                v-model="trip.name" 
+                v-model="currentTrip.name" 
             />
             <button
                 :class="{
                     [$style.tripNameButton]: true,
-                    [$style.tripNameButtonActive]: tempTripName !== trip.name, 
-                    [$style.tripNameButtonInactive]: tempTripName === trip.name,
+                    [$style.tripNameButtonActive]: tempTripName !== currentTrip.name, 
+                    [$style.tripNameButtonInactive]: tempTripName === currentTrip.name,
                 }"
                 type="submit"
                 @click="
-                    trip.name !== tempTripName ? updateTrip(trip[`@id`]) : null, 
-                    tempTripName = trip.name
+                    currentTrip.name !== tempTripName ? updateCurrentTrip : null, 
+                    tempTripName = currentTrip.name
                 "
             >
                 Save
             </button>
         </div>
-        <div v-if="trip">
+        <div v-if="currentTrip">
             
         </div>
     </div>
@@ -34,9 +34,8 @@
 
 <script lang="ts">
     import { defineComponent } from 'vue';
-    import { fetchTrip, updateTrip } from '@/js/services/trip-service';
-    import type { Trip } from '@/js/types/types';
-    import { fetchStages } from '@/js/services/stage-service';
+    import { mapState, mapStores, mapActions } from 'pinia';
+    import { useTripStore } from '@/js/stores/TripStore';
     import TripCard from '@/js/components/TripCard.vue';
     import newTripIcon from '@/icons/new_trip_icon.svg';
 
@@ -46,48 +45,19 @@
             TripCard,
             newTripIcon,
         },
-        data() {
-            return {
-                trip: {} as Trip,
-                tempTripName: '' as string
-            }
-        },
         created() {
             this.$watch(
                 () => this.$route.params,
                 () => {
-                    this.browseTrip(this.$route.params.tripId)
+                    this.TripStore.browseCurrentTrip(this.$route.params.tripId)
                 },
                 { immediate: true }
             )
         },
-        methods: {
-            async browseTrip(id: any) {
-                try {
-                    const response = await fetchTrip(id);
-                    this.trip = response.data;
-                    this.tempTripName = this.trip.name;
-                } catch (error) {
-                    console.log('Something went wrong during the trip loading');
-                }
-            },
-            /*async browseStages() {
-                try {
-                    const response = await fetchStages('');
-                    this.trip = response.data['hydra:member'];
-                } catch (error) {
-                    console.log('Something went wrong during the trip loading');
-                }
-            }*/
-            async updateTrip(iri: string) {
-                try {
-                    const response = await updateTrip(iri, this.trip);
-                    this.trip = response.data;
-                    this.tempTripName = this.trip.name;
-                } catch (error) {
-                    console.log('Something went wrong during the trip update');
-                }
-            },
+        computed: {
+            ...mapState(useTripStore, ['currentTrip', 'tempTripName']),
+            ...mapStores(useTripStore),
+            ...mapActions(useTripStore, ['updateCurrentTrip']),
         },
     });
 </script>
