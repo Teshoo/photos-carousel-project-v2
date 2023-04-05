@@ -3,18 +3,16 @@ export {}
 import { defineStore } from 'pinia';
 
 import { fetchTrips } from '@/js/services/trip-service';
-import type { Trip } from '@/js/services/trip-service';
+import type { Trip } from '@/js/types/types';
 
 export const useTripStore = defineStore('TripStore', {
     state: () => {
         return {
             trips: {} as Array<Trip>,
-            name: 'bob',
         };
     },
     getters: {
         getTrips(state) {
-            //this.browseTrips();
             return state.trips;
         }
     },

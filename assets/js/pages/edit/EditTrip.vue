@@ -35,7 +35,7 @@
 <script lang="ts">
     import { defineComponent } from 'vue';
     import { fetchTrip, updateTrip } from '@/js/services/trip-service';
-    import type { Trip } from '@/js/services/trip-service';
+    import type { Trip } from '@/js/types/types';
     import { fetchStages } from '@/js/services/stage-service';
     import TripCard from '@/js/components/TripCard.vue';
     import newTripIcon from '@/icons/new_trip_icon.svg';
