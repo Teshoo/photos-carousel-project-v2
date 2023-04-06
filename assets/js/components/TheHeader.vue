@@ -9,24 +9,37 @@
                         </div>
                         <div 
                             :class="$style.homepageButtonTitle" 
-                            v-if="!($route.params.tripId)
-                        ">
+                            v-if="!($route.params.tripId)"
+                        >
                             {{ title }}
                         </div>
                     </div>
                 </router-link>
             </div>
-            <div v-if="$route.params.tripId">
-                <chevronUrl/>
+            <chevronbcUrl v-if="$route.params.tripId"/>
+            <div
+                :class="$style.editingLabel" 
+                v-if="$route.params.tripId"
+            >
+                Editing
             </div>
-            <div :class="$style.dropdown">
-                <div :class="$style.dropbtn">{{ currentTrip.name }}</div>
+            <chevronbcUrl v-if="$route.params.tripId"/>
+            <div
+                v-if="$route.params.tripId" 
+                :class="$style.dropdown"
+            >
+                <div :class="$style.dropbtn">
+                    {{ currentTrip.name }}
+                    <chevrondpnUrl/>
+                </div>
                 <div :class="$style.dropdownContent">
                     <div 
                         :class="$style.dropdownItem" 
                         v-for="trip in trips" 
                         :key="trip[`@id`]" 
-                        @click="tripId = trip.id">{{ trip.name }}
+                        @click="tripId = trip.id"
+                    >
+                        {{ trip.name }}
                     </div>
                 </div>
             </div>
@@ -38,14 +51,16 @@
     import { defineComponent } from 'vue';
     import { mapState, mapStores } from 'pinia';
     import { useTripStore } from '@/js/stores/TripStore';
-    import chevronUrl from '@/icons/chevron_breadcrumb.svg';
+    import chevronbcUrl from '@/icons/chevron_breadcrumb.svg';
+    import chevrondpnUrl from '@/icons/chevron_dropdownmenu.svg';
     import homeIcon from '@/icons/home_icon.svg';
     
     export default defineComponent({
         name: 'TheHeader',
         components: {
             homeIcon,
-            chevronUrl,
+            chevronbcUrl,
+            chevrondpnUrl,
         },
         props: {
             title: { type: String, required: true }
@@ -93,7 +108,7 @@
         justify-content: center;
 
         height: 50px;
-        padding: 0px 10px 2px 10px;
+        padding: 0px 10px 0px 10px;
 
         background-color: #FF5470;
         box-sizing: border-box;
@@ -107,12 +122,41 @@
         line-height: 35px;
         color: #FFFFFF; 
     }
+    .editingLabel {
+        font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+        font-style: normal;
+        font-weight: 700;
+        font-size: 25px;
+        line-height: 29px;
+        letter-spacing: 0.1em;
+
+        color: #FFFFFF;
+    }
     .dropbtn {
-        background-color: #4CAF50;
-        color: white;
-        padding: 16px;
-        font-size: 16px;
+        display: grid;
+        grid-template-columns: auto auto;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 15px;
+        gap: 10px;
+
+        width: 250px;
+        height: 50px;
+
+        background: rgba(0, 0, 0, 0.2);
+
+        border: 2px solid #FFEFD5;
+        border-radius: 10px;
+        box-sizing: border-box;
+        
         cursor: pointer;
+
+        font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+        font-style: normal;
+        font-weight: 700;
+        font-size: 25px;
+        line-height: 29px;
+        color: #FFFFFF;
     }
     .dropdown {
         position: relative;
@@ -121,19 +165,49 @@
     .dropdownContent {
         display: none;
         position: absolute;
-        background-color: #f9f9f9;
-        min-width: 160px;
-        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+
+        background-color: #FFAA1D;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.4);
+
+        width: 250px;
+        
+        border: 2px solid #FFEFD5;
+        border-radius: 0px 0px 10px 10px;
+        border-style: none solid solid solid;        
+        box-sizing: border-box;
+
+        cursor: pointer;
+
         z-index: 1;
     }
+    .dropdownItem {
+        display: grid;
+        justify-content: flex-start;
+        align-items: center;
+        padding: 10px 15px;
+        box-sizing: border-box;
+
+        height: 50px;
+        background: rgba(0, 0, 0, 0.2);
+
+        font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+        font-style: normal;
+        font-weight: 500;
+        font-size: 25px;
+        line-height: 29px;
+        color: #FFFFFF;
+    }
     .dropdownItem:hover {
-        background-color: #FF5470;
-        cursor: pointer;
+        background: rgba(0, 0, 0, 0.3);
     }
     .dropdown:hover .dropdownContent {
         display: block;
+        box-sizing: border-box;
     }
     .dropdown:hover .dropbtn {
-        background-color: #3e8e41;
+        background: rgba(0, 0, 0, 0.3);
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.4);
+        border-style: solid solid none solid;
+        border-radius: 10px 10px 0px 0px;
     }
 </style>
