@@ -41,6 +41,7 @@ export const useTripStore = defineStore('Trip', {
                 const response = await updateTrip(this.currentTrip['@id'], this.currentTrip);
                 this.currentTrip = response.data;
                 this.tempTripName = this.currentTrip.name;
+                this.browseTrips();
             } catch (error) {
                 console.log('Something went wrong during the trip update');
             }
