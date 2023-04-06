@@ -19,11 +19,16 @@
             <div v-if="$route.params.tripId">
                 <chevronUrl/>
             </div>
-            <div v-if="$route.params.tripId">
-                <select v-model="tripId">
-                <option :value="currentTrip.id" default>{{ currentTrip.name }}</option>
-                <option v-for="trip in trips" :key="trip[`@id`]" :value="trip.id">{{ trip.name }}</option>
-                </select>
+            <div :class="$style.dropdown">
+                <div :class="$style.dropbtn">{{ currentTrip.name }}</div>
+                <div :class="$style.dropdownContent">
+                    <div 
+                        :class="$style.dropdownItem" 
+                        v-for="trip in trips" 
+                        :key="trip[`@id`]" 
+                        @click="tripId = trip.id">{{ trip.name }}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -47,7 +52,7 @@
         },
         data() {
             return {
-                tripId: null as string|null,
+                tripId: null as number|null,
             }
         },
         created() {
@@ -101,5 +106,34 @@
         font-size: 25px;
         line-height: 35px;
         color: #FFFFFF; 
+    }
+    .dropbtn {
+        background-color: #4CAF50;
+        color: white;
+        padding: 16px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+    .dropdown {
+        position: relative;
+        display: inline-block;
+    }
+    .dropdownContent {
+        display: none;
+        position: absolute;
+        background-color: #f9f9f9;
+        min-width: 160px;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+        z-index: 1;
+    }
+    .dropdownItem:hover {
+        background-color: #FF5470;
+        cursor: pointer;
+    }
+    .dropdown:hover .dropdownContent {
+        display: block;
+    }
+    .dropdown:hover .dropbtn {
+        background-color: #3e8e41;
     }
 </style>
