@@ -5,12 +5,12 @@ import EditTrip from '@/js/pages/edit/EditTrip.vue';
 const routes = [
     { 
         path: '/', 
-        name: 'Trip List', 
+        name: 'tripList', 
         component: TripList,
     },
     {
         path: '/edit/trip/:tripId',
-        name: 'Edit Trip',
+        name: 'editTrip',
         component: EditTrip,
     },
 ]

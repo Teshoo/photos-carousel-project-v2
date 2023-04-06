@@ -16,13 +16,13 @@
                     </div>
                 </router-link>
             </div>
-            <div>
+            <div v-if="$route.params.tripId">
                 <chevronUrl/>
             </div>
             <div v-if="$route.params.tripId">
                 <select v-model="tripId">
-                <option :value="tripId">Please select one</option>
-                <option v-for="trip in trips" :key="trip[`@id`]">{{ trip.name }}</option>
+                <option :value="currentTrip.id" default>{{ currentTrip.name }}</option>
+                <option v-for="trip in trips" :key="trip[`@id`]" :value="trip.id">{{ trip.name }}</option>
                 </select>
             </div>
         </div>
@@ -53,9 +53,14 @@
         created() {
             this.TripStore.browseTrips();
         },
+        watch: {
+            tripId() {
+                this.$router.push({ name: 'editTrip', params: { tripId: this.tripId } })
+            },
+        },
         computed: {
-            ...mapState(useTripStore, ['trips']),
-            ...mapStores(useTripStore)
+            ...mapState(useTripStore, ['trips', 'currentTrip']),
+            ...mapStores(useTripStore),
         },
     });
 </script>
