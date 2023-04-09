@@ -30,16 +30,8 @@
             :class="$style.stagesContainer"
             v-if="currentTrip"
         >
-            <div 
-                :class="$style.stageCard"
-                v-for="stage in tripStages"
-            >
-                <input 
-                    :class="$style.stageNameInput"
-                    type="text"
-                    placeholder="stage name"
-                    v-model="stage.name"
-                />
+            <div v-for="stage in tripStages">
+                <EditStageCard :stage="stage"/>
             </div>
         </div>
     </div>
@@ -50,14 +42,12 @@
     import { mapState, mapStores, mapActions } from 'pinia';
     import { useTripStore } from '@/js/stores/TripStore';
     import { useStageStore } from '@/js/stores/StageStore';
-    import TripCard from '@/js/components/TripCard.vue';
-    import newTripIcon from '@/icons/new_trip_icon.svg';
+    import EditStageCard from '@/js/components//edit/EditStageCard.vue';
 
     export default defineComponent({
-        name: 'TripList',
+        name: 'EditTrip',
         components: {
-            TripCard,
-            newTripIcon,
+            EditStageCard,
         },
         created() {
             this.$watch(
@@ -156,36 +146,5 @@
         display: grid;
         grid-template-columns: 1fr;
         gap: 30px;
-    }
-    .stageCard {
-        display: grid;
-        grid-template-columns: auto auto;
-        padding: 10px;
-        gap: 30px;
-
-        width: 700px;
-
-        background: #A5A4D3;
-        box-shadow: 0px 4px 4px 4px rgba(0, 0, 0, 0.25);
-        border-radius: 20px;
-    }
-    .stageNameInput {
-        font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-        font-size: 18px;
-        font-weight: 700;
-        line-height: 28px;
-        color: #383838;
-        
-        height: 40px;
-        width: 240px;
-        background-color: #FFEFD5;
-
-        border-radius: 10px;
-        border: none;
-        box-sizing: border-box;
-        padding: 10px;
-    }
-    .stageNameInput:focus {
-        outline: 1px solid #FF5470;
     }
 </style>
