@@ -22,3 +22,16 @@ export function fetchStages(tripIri: any) {
         params,
     });
 }
+
+/**
+ * @param {string|null} stageIri
+ * @param {Object|null} stage
+ * @returns {Promise}
+ */
+export function updateStage(stageIri: string, stage: Object) {
+    const params: {[index: string]:any}= {};
+    if (stage) {
+        params.tripStage = stage;
+    }
+    return axios.put(stageIri, params.tripStage);
+}

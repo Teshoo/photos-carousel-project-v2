@@ -30,6 +30,7 @@ export function addTrip() {
 
 /**
  * @param {string|null} tripIri
+ * @param {Object|null} trip
  * @returns {Promise}
  */
 export function updateTrip(tripIri: string, trip: Object) {

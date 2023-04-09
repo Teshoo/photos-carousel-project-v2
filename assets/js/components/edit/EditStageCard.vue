@@ -1,5 +1,6 @@
 <template>
-    <div :class="$style.stageCard">
+    <div :class="$style.container">
+        <div :class="$style.stageCard">
         <input 
             :class="$style.stageNameInput"
             type="text"
@@ -7,25 +8,71 @@
             v-model="stage.name"
         />
     </div>
+    <button
+        :class="{
+            [$style.stageCardSaveBtn]: true,
+            [$style.stageCardSaveBtnActive]: tempStage.name !== stage.name, 
+            [$style.stageCardSaveBtnInactive]: tempStage.name === stage.name,
+        }"
+        type="submit"
+        @click="
+            stage.name !== tempStage.name ? updateStage() : null, 
+            tempStage.name = stage.name
+        "
+    >
+        Save
+    </button>
+    </div>
 </template>
 
 <script lang="ts">
     import { defineComponent } from 'vue';
     import type { PropType } from 'vue';
     import type { TripStage } from '@/js/types/types';
+    import { updateStage } from '@/js/services/stage-service';
 
     export default defineComponent({
         name: 'EditStageCard',
         props: {
-            stage: { 
+            tripStage: { 
                 type: Object as PropType<TripStage>,
                 required: true,
             },
         },
+        data() {
+            return {
+                stage: {} as TripStage,
+                tempStage: {} as TripStage,
+            };
+        },
+        created() {
+            this.stage.name = this.tripStage.name;
+            this.stage.tripDays = [];
+            this.tempStage.name = this.tripStage.name;
+        },
+        methods: {
+            async updateStage() {
+                try {
+                    const response = await updateStage(this.tripStage['@id'], this.stage);
+                    this.stage = response.data;
+                    this.tempStage.name = this.stage.name;
+                } catch (error) {
+                    console.log('Something went wrong during the stage update');
+                }
+            }
+        }
     });
 </script>
 
 <style module>
+    .container {
+        display: grid;
+        grid-template-columns: auto auto;
+        justify-items: center;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+    }
     .stageCard {
         display: grid;
         grid-template-columns: auto auto;

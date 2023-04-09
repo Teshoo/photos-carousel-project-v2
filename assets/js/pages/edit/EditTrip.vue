@@ -4,7 +4,9 @@
             :class="$style.tripEdit"
             v-if="currentTrip"
         >
-            Trip : 
+            <div :class="$style.titles">
+                Trip : 
+            </div>
             <input 
                 :class="$style.tripNameInput"
                 type="text"
@@ -30,8 +32,11 @@
             :class="$style.stagesContainer"
             v-if="currentTrip"
         >
+            <div :class="$style.titles">
+                Trip's stages : 
+            </div>
             <div v-for="stage in tripStages">
-                <EditStageCard :stage="stage"/>
+                <EditStageCard :tripStage="stage"/>
             </div>
         </div>
     </div>
@@ -42,7 +47,7 @@
     import { mapState, mapStores, mapActions } from 'pinia';
     import { useTripStore } from '@/js/stores/TripStore';
     import { useStageStore } from '@/js/stores/StageStore';
-    import EditStageCard from '@/js/components//edit/EditStageCard.vue';
+    import EditStageCard from '@/js/components/edit/EditStageCard.vue';
 
     export default defineComponent({
         name: 'EditTrip',
@@ -77,19 +82,20 @@
         margin: 45px 20% 0 20%;
         box-sizing: border-box;
     }
-    .tripEdit {
-        display: grid;
-        grid-template-columns: auto auto auto;
-        justify-content: start;
-        align-items: center;
-        gap: 20px;
-
+    .titles {
         font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
         font-size: 24px;
         font-weight: 700;
         line-height: 28px;
         letter-spacing: 0.1em;
         color: #FFEFD5;
+    }
+    .tripEdit {
+        display: grid;
+        grid-template-columns: auto auto auto;
+        justify-content: start;
+        align-items: center;
+        gap: 20px;
     }
     .tripNameInput {
         font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;

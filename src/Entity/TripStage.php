@@ -50,7 +50,6 @@ class TripStage
     private ?Trip $trip = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Assert\NotBlank]
     #[Assert\Length(
         min:5, 
         max:15, 
