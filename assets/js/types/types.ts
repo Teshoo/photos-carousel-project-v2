@@ -18,7 +18,7 @@ interface TripStage {
     name: string,
     lat: string,
     lng: string,
-    Trip: Array<string>,
+    trip: string,
     tripDays: Array<string>,
 }
 

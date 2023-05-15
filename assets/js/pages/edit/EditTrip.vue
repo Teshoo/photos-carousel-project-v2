@@ -35,7 +35,7 @@
             <div :class="$style.titles">
                 Trip's stages : 
             </div>
-            <div v-for="stage in tripStages">
+            <div v-for="stage in stages">
                 <EditStageCard :tripStage="stage"/>
             </div>
         </div>
@@ -59,7 +59,7 @@
                 () => this.$route.params,
                 () => {
                     this.TripStore.browseCurrentTrip(this.$route.params.tripId);
-                    this.StageStore.browseTripStages(this.$route.params.tripId);
+                    this.StageStore.browseStages(this.$route.params.tripId);
                 },
                 { immediate: true }
             )
@@ -68,7 +68,7 @@
             ...mapState(useTripStore, ['currentTrip', 'tempTripName']),
             ...mapStores(useTripStore),
             ...mapActions(useTripStore, ['updateCurrentTrip']),
-            ...mapState(useStageStore, ['tripStages']),
+            ...mapState(useStageStore, ['stages']),
             ...mapStores(useStageStore),
         },
     });

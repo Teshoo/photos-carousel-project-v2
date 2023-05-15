@@ -2,50 +2,52 @@ export {}
 
 import { defineStore } from 'pinia';
 
-import { fetchStages } from '@/js/services/stage-service';
+import { fetchStages, fetchStage, updateStage } from '@/js/services/stage-service';
 import type { TripStage } from '@/js/types/types';
 
 export const useStageStore = defineStore('Stage', {
     state: () => {
         return {
-            tripStages: {} as Array<TripStage>,
-            currentTrip: {} as TripStage,
-            tempTripStageName: '' as string
+            stages: {} as Array<TripStage>,
+            currentStage: {} as TripStage,
+            tempStageName: '' as string
         };
     },
     getters: {
-        getTrips(state) {
-            return state.tripStages;
+        getStages(state) {
+            return state.stages;
         }
     },
     actions: {
-        async browseTripStages(tripId: any) {
+        async browseStages(tripId: any) {
             let tripIri: string = 'api/trips/' + tripId;
             try {
                 const response = await fetchStages(tripIri);
-                this.tripStages = response.data['hydra:member'];
+                this.stages = response.data['hydra:member'];
             } catch (error) {
                 console.log('Something went wrong during stages loading');
             }
         },
-        /*async browseCurrentTripStage(id: any) {
+        async browseCurrentStage(id: any) {
             try {
-                const response = await fetchTripStage(id);
-                this.currentTripStageName = response.data;
-                this.tempTripStageName = this.currentTripStage.name;
+                const response = await fetchStage(id);
+                this.currentStage = response.data;
+                this.tempStageName = this.currentStage.name;
             } catch (error) {
                 console.log('Something went wrong during the stage loading');
             }
         },
-        async updateCurrentTripStage() {
+        async updateCurrentStage() {
             try {
-                const response = await updateTripStage(this.currentTripStage['@id'], this.currentTripStage);
-                this.currentTripStage = response.data;
-                this.tempTripStageName = this.currentTripStage.name;
-                this.browseTripStages();
+                const response = await updateStage(this.currentStage['@id'], this.currentStage);
+                this.currentStage = response.data;
+                this.tempStageName = this.currentStage.name;
+                
+                let currentTripId = this.currentStage.trip.replace('/api/trips/','');
+                this.browseStages(currentTripId);
             } catch (error) {
                 console.log('Something went wrong during the stage update');
             }
-        },*/
+        },
     }
 });
