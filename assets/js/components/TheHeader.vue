@@ -43,6 +43,26 @@
                     </div>
                 </div>
             </div>
+            <chevronbcUrl v-if="$route.params.stageId"/>
+            <div
+                v-if="$route.params.stageId" 
+                :class="$style.dropdown"
+            >
+                <div :class="$style.dropbtn">
+                    {{ currentStage.name }}
+                    <chevrondpnUrl/>
+                </div>
+                <div :class="$style.dropdownContent">
+                    <div 
+                        :class="$style.dropdownItem" 
+                        v-for="stage in stages" 
+                        :key="stage[`@id`]" 
+                        @click="stageId = stage.id"
+                    >
+                        {{ stage.name }}
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -51,6 +71,7 @@
     import { defineComponent } from 'vue';
     import { mapState, mapStores } from 'pinia';
     import { useTripStore } from '@/js/stores/TripStore';
+    import { useStageStore } from '@/js/stores/StageStore';
     import chevronbcUrl from '@/icons/chevron_breadcrumb.svg';
     import chevrondpnUrl from '@/icons/chevron_dropdownmenu.svg';
     import homeIcon from '@/icons/home_icon.svg';
@@ -68,6 +89,7 @@
         data() {
             return {
                 tripId: null as number|null,
+                stageId: null as number|null,
             }
         },
         created() {
@@ -77,10 +99,15 @@
             tripId() {
                 this.$router.push({ name: 'editTrip', params: { tripId: this.tripId } })
             },
+            stageId() {
+                this.$router.push({ name: 'editStage', params: { stageId: this.stageId } })
+            },
         },
         computed: {
             ...mapState(useTripStore, ['trips', 'currentTrip']),
             ...mapStores(useTripStore),
+            ...mapState(useStageStore, ['stages', 'currentStage']),
+            ...mapStores(useStageStore),
         },
     });
 </script>

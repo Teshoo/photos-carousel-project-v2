@@ -35,7 +35,7 @@
             <div :class="$style.titles">
                 Stage's days: 
             </div>
-            <div v-for="day in tripDays">
+            <div v-for="day in days">
                 <EditDayCard :tripDay="day"/>
             </div>
         </div>
@@ -59,7 +59,7 @@
                 () => this.$route.params,
                 () => {
                     this.StageStore.browseCurrentStage(this.$route.params.stageId);
-                    this.DayStore.browseTripDays(this.$route.params.stageId);
+                    this.DayStore.browseDays(this.$route.params.stageId);
                 },
                 { immediate: true }
             )
@@ -68,7 +68,7 @@
             ...mapState(useStageStore, ['currentStage', 'tempStageName']),
             ...mapStores(useStageStore),
             ...mapActions(useStageStore, ['updateCurrentStage']),
-            ...mapState(useDayStore, ['tripDays']),
+            ...mapState(useDayStore, ['days']),
             ...mapStores(useDayStore),
         },
     });

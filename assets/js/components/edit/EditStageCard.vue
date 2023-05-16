@@ -22,6 +22,12 @@
     >
         Save
     </button>
+    
+    <button v-if="stage">
+        <router-link :to="{ name: 'editStage', params: { stageId: stage.id }}">
+                View
+        </router-link>
+    </button>
     </div>
 </template>
 
@@ -46,6 +52,7 @@
             };
         },
         created() {
+            this.stage.id = this.tripStage.id;
             this.stage.name = this.tripStage.name;
             this.stage.tripDays = [];
             this.tempStage.name = this.tripStage.name;

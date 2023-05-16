@@ -16,7 +16,7 @@ export function fetchStages() {
 export function fetchDays(stageIri: any) {
     const params: {[index: string]:any}= {};
     if (stageIri) {
-        params.trip = stageIri;
+        params.tripStage = stageIri;
     }
     return axios.get('/api/trip_days', {
         params,
