@@ -3,13 +3,6 @@ export {}
 import axios from 'axios';
 
 /**
- * @returns {Promise}
- */
-export function fetchStages() {
-    return axios.get('/api/trips');
-}
-
-/**
  * @param {string|null} stageIri
  * @returns {Promise}
  */
@@ -21,6 +14,14 @@ export function fetchDays(stageIri: any) {
     return axios.get('/api/trip_days', {
         params,
     });
+}
+
+/**
+ * @param {number|null} tripDayId
+ * @returns {Promise}
+ */
+export function fetchDay(tripDayId: Number) {
+    return axios.get('/api/trip_days/'+tripDayId);
 }
 
 /**

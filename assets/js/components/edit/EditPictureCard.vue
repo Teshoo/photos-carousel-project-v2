@@ -80,7 +80,7 @@
     import { defineComponent } from 'vue';
     import type { PropType } from 'vue';
     import type { Picture } from '@/js/types/types';
-    //import { updateStage } from '@/js/services/stage-service';
+    import { updatePicture } from '@/js/services/picture-service';
 
     export default defineComponent({
         name: 'EditStageCard',
@@ -109,15 +109,16 @@
             this.tempPicture.lat = this.picture.lat;
             this.tempPicture.lng = this.picture.lng;
         },
+        
         methods: {
             async updatePicture() {
-                /*try {
-                    const response = await updateStage(this.tripStage['@id'], this.stage);
-                    this.stage = response.data;
-                    this.tempStage.name = this.stage.name;
+                try {
+                    const response = await updatePicture(this.picture['@id'], this.cardPicture);
+                    this.cardPicture = response.data;
+                    this.tempPicture.name = this.cardPicture.name;
                 } catch (error) {
                     console.log('Something went wrong during the stage update');
-                }*/
+                }
             }
         }
     });

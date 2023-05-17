@@ -22,6 +22,11 @@
     >
         Save
     </button>
+    <button v-if="day">
+        <router-link :to="{ name: 'editDay', params: { dayId: day.id }}">
+            View
+        </router-link>
+    </button>
     </div>
 </template>
 
@@ -46,6 +51,7 @@
             };
         },
         created() {
+            this.day.id = this.tripDay.id;
             this.day.name = this.tripDay.name;
             this.day.pictures = [];
             this.tempDay.name = this.tripDay.name;

@@ -5,7 +5,7 @@
             v-if="currentStage"
         >
             <div :class="$style.titles">
-                Trip : 
+                Stage: 
             </div>
             <input 
                 :class="$style.stageNameInput"
