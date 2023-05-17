@@ -63,6 +63,26 @@
                     </div>
                 </div>
             </div>
+            <chevronbcUrl v-if="$route.params.dayId"/>
+            <div
+                v-if="$route.params.dayId" 
+                :class="$style.dropdown"
+            >
+                <div :class="$style.dropbtn">
+                    {{ currentDay.name }}
+                    <chevrondpnUrl/>
+                </div>
+                <div :class="$style.dropdownContent">
+                    <div 
+                        :class="$style.dropdownItem" 
+                        v-for="day in days" 
+                        :key="day[`@id`]" 
+                        @click="dayId = day.id"
+                    >
+                        {{ day.name }}
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </template>
@@ -72,6 +92,7 @@
     import { mapState, mapStores } from 'pinia';
     import { useTripStore } from '@/js/stores/TripStore';
     import { useStageStore } from '@/js/stores/StageStore';
+    import { useDayStore } from '@/js/stores/DayStore';
     import chevronbcUrl from '@/icons/chevron_breadcrumb.svg';
     import chevrondpnUrl from '@/icons/chevron_dropdownmenu.svg';
     import homeIcon from '@/icons/home_icon.svg';
@@ -90,6 +111,7 @@
             return {
                 tripId: null as number|null,
                 stageId: null as number|null,
+                dayId: null as number|null,
             }
         },
         created() {
@@ -102,12 +124,17 @@
             stageId() {
                 this.$router.push({ name: 'editStage', params: { stageId: this.stageId } })
             },
+            dayId() {
+                this.$router.push({ name: 'editDay', params: { dayId: this.dayId } })
+            },
         },
         computed: {
             ...mapState(useTripStore, ['trips', 'currentTrip']),
             ...mapStores(useTripStore),
             ...mapState(useStageStore, ['stages', 'currentStage']),
             ...mapStores(useStageStore),
+            ...mapState(useDayStore, ['days', 'currentDay']),
+            ...mapStores(useDayStore),
         },
     });
 </script>
