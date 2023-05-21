@@ -5,15 +5,14 @@
                 <input type="file"/>
             </div>
             <div :class="$style.middlePictureCard">
-                <input 
+                <textarea 
                     :class="{
                         [$style.pictureCardInputs]: true,
                         [$style.pictureCardInputName]: true,
                     }"
-                    type="text"
                     placeholder="picture name"
                     v-model="cardPicture.name"
-                />
+                ></textarea>
                 <input 
                     :class="$style.pictureCardInputs"
                     type="datetime-local"
@@ -25,14 +24,20 @@
                 <div :class="$style.leftPictureMap">
                     <div :class="$style.pictureCoordinates">
                         <input
-                            :class="$style.pictureCardInputs"
-                            type="datetime-local"
+                            :class="{
+                                [$style.pictureCardInputs]: true,
+                                [$style.pictureCardInputCoord]: true,
+                            }"
+                            type="text"
                             placeholder="picture lat"
                             v-model="cardPicture.lat"
                         />
                         <input
-                            :class="$style.pictureCardInputs"
-                            type="datetime-local"
+                            :class="{
+                                [$style.pictureCardInputs]: true,
+                                [$style.pictureCardInputCoord]: true,
+                            }"
+                            type="text"
                             placeholder="picture lng"
                             v-model="cardPicture.lng"
                         />
@@ -99,7 +104,7 @@
         },
         created() {
             this.cardPicture.name = this.picture.name;
-            this.cardPicture.shotTime = this.picture.shotTime;
+            this.cardPicture.shotTime = this.picture.shotTime.slice(0,19);
             this.cardPicture.lat = this.picture.lat;
             this.cardPicture.lng = this.picture.lng;
             this.cardPicture.extras = [];
@@ -115,6 +120,7 @@
                 try {
                     const response = await updatePicture(this.picture['@id'], this.cardPicture);
                     this.cardPicture = response.data;
+                    this.cardPicture.shotTime = this.cardPicture.shotTime.slice(0,19);
                     this.tempPicture.name = this.cardPicture.name;
                 } catch (error) {
                     console.log('Something went wrong during the stage update');
@@ -135,12 +141,12 @@
     }
     .pictureCard {
         display: grid;
-        grid-template-columns: auto auto auto;
-        align-content: stretch;
+        grid-template-columns: auto auto 1fr;
+        justify-content: start;
         padding: 10px;
         gap: 30px;
 
-        width: 700px;
+        width: 960px;
 
         background: #A5A4D3;
         box-shadow: 0px 4px 4px 4px rgba(0, 0, 0, 0.25);
@@ -153,7 +159,6 @@
     .middlePictureCard {
         display: grid;
         grid-template-rows: auto auto;
-        justify-content: stretch;
         gap: 10px;
 
         width: 240px;
@@ -161,7 +166,8 @@
     }
     .rightPictureCard {
         display: grid;
-        grid-template-columns: auto auto;
+        grid-template-columns: auto 1fr;
+        gap: 10px;
 
         height: 150px;
     }
@@ -176,7 +182,9 @@
     .pictureCoordinates {
         display: grid;
         grid-template-rows: 1fr 1fr;
-        gap: 10px
+        gap: 10px;
+
+        width: 150px;
     }
     .mapContainer {
         background: #D9D9D9;
@@ -184,9 +192,8 @@
     }
     .pictureCardInputs {
         font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-        font-size: 18px;
-        font-weight: 700;
-        line-height: 28px;
+        font-size: 17px;
+        font-weight: 500;
         color: #383838;
         
         height: 40px;
@@ -202,6 +209,12 @@
     }
     .pictureCardInputName {
         height: 100px;
+
+        text-align: start;
+        resize: none;
+    }
+    .pictureCardInputCoord {
+        width: 150px;
     }
     .googleMapBtn {
         display: grid;

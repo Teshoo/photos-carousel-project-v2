@@ -9,8 +9,6 @@ export const usePictureStore = defineStore('Picture', {
     state: () => {
         return {
             pictures: {} as Array<Picture>,
-            currentStage: {} as Picture,
-            tempPictureName: '' as string
         };
     },
     getters: {
