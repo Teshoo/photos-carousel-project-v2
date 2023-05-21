@@ -2,7 +2,8 @@
     <div :class="$style.container">
         <div :class="$style.pictureCard">
             <div :class="$style.leftPictureCard">
-                <input type="file"/>
+                <!--<input type="file"/>-->
+                <base-image-input v-model="imageFile"/>
             </div>
             <div :class="$style.middlePictureCard">
                 <textarea 
@@ -86,9 +87,13 @@
     import type { PropType } from 'vue';
     import type { Picture } from '@/js/types/types';
     import { updatePicture } from '@/js/services/picture-service';
+    import BaseImageInput from '@/js/components/edit/BaseImageInput.vue';
 
     export default defineComponent({
-        name: 'EditStageCard',
+        name: 'EditPictureCard',
+        components: {
+            BaseImageInput,
+        },
         props: {
             picture: { 
                 type: Object as PropType<Picture>,
@@ -100,6 +105,7 @@
                 cardPicture: {} as Picture,
                 tempPicture: {} as Picture, // use to detect changes in input contents
                 googleMapUrl: 'https://google.com/maps' as String,
+                imageFile: null,
             };
         },
         created() {
@@ -155,6 +161,10 @@
     .leftPictureCard {
         width: 200px;
         height: 150px;
+
+        background-color: rgba(255, 239, 213, 0.5);
+
+        border-radius: 10px;
     }
     .middlePictureCard {
         display: grid;
