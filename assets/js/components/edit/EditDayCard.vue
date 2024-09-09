@@ -1,3 +1,33 @@
+<script setup lang="ts">
+    import { ref, type Ref } from 'vue';
+    import { useRouter } from 'vue-router';
+    import type { TripDay } from '@/js/types/types';
+    import { useDayStore } from '@/js/stores/DayStore';
+    import { cloneDay } from '@/js/services/day.service';
+
+    const router = useRouter();
+    const dayStore = useDayStore();
+
+    const props = defineProps<{ day: TripDay }>();
+
+    const dayToEdit: Ref<TripDay> = ref(cloneDayToEdit());
+
+    function editDay() {
+        if (props.day.name !== dayToEdit.value.name) {
+            dayStore.editDay(dayToEdit.value);
+        }
+    }
+
+    function cloneDayToEdit() {
+        return cloneDay(props.day);
+    }
+
+    async function changeCurrentDay() {
+        await dayStore.browseCurrentDay(props.day.id);
+        router.push({ name: 'editDay', params: { dayId: dayStore.getCurrentDay.value.id } });
+    }
+</script>
+
 <template>
     <div :class="$style.container">
         <div :class="$style.dayCard">
@@ -11,64 +41,19 @@
     <button
         :class="{
             [$style.dayCardSaveBtn]: true,
-            [$style.dayCardSaveBtnActive]: tempDay.name !== day.name, 
-            [$style.dayCardSaveBtnInactive]: tempDay.name === day.name,
+            [$style.dayCardSaveBtnActive]: dayToEdit.name !== day.name, 
+            [$style.dayCardSaveBtnInactive]: dayToEdit.name === day.name,
         }"
         type="submit"
-        @click="
-            day.name !== tempDay.name ? updateDay() : null, 
-            tempDay.name = day.name
-        "
+        @click="editDay()"
     >
         Save
     </button>
-    <button v-if="day">
-        <router-link :to="{ name: 'editDay', params: { dayId: day.id }}">
-            View
-        </router-link>
+    <button @click="changeCurrentDay()">
+        View
     </button>
     </div>
 </template>
-
-<script lang="ts">
-    import { defineComponent } from 'vue';
-    import type { PropType } from 'vue';
-    import type { TripDay } from '@/js/types/types';
-    import { updateDay } from '@/js/services/day-service';
-
-    export default defineComponent({
-        name: 'EditDayCard',
-        props: {
-            tripDay: { 
-                type: Object as PropType<TripDay>,
-                required: true,
-            },
-        },
-        data() {
-            return {
-                day: {} as TripDay,
-                tempDay: {} as TripDay,
-            };
-        },
-        created() {
-            this.day.id = this.tripDay.id;
-            this.day.name = this.tripDay.name;
-            this.day.pictures = [];
-            this.tempDay.name = this.tripDay.name;
-        },
-        methods: {
-            async updateDay() {
-                try {
-                    const response = await updateDay(this.tripDay['@id'], this.day);
-                    this.day = response.data;
-                    this.tempDay.name = this.day.name;
-                } catch (error) {
-                    console.log('Something went wrong during the stage update');
-                }
-            }
-        }
-    });
-</script>
 
 <style module>
     .container {

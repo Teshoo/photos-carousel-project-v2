@@ -1,9 +1,27 @@
+<script setup lang="ts">
+    import { useRouter } from 'vue-router';
+    import type { Trip } from '@/js/types/types'
+    import { useTripStore } from '@/js/stores/TripStore';
+    import editIcon from '@/icons/edit_icon.svg';
+
+    defineProps<{ trip: Trip }>()
+
+    const router = useRouter();
+    const tripStore = useTripStore();
+
+    async function changeCurrentTrip(trip: Trip) {
+        await tripStore.browseCurrentTrip(trip.id);
+        router.push({ name: 'editTrip', params: { tripId: tripStore.getCurrentTrip.value.id } });
+    }
+</script>
+
 <template>
     <div :class="$style.card">
-        <div :class="$style.editButton">
-            <router-link :to="'/edit/trip/' + trip.id">
-                <editIcon/>
-            </router-link>
+        <div 
+            :class="$style.editButton"
+            @click="changeCurrentTrip(trip)"
+        >
+            <editIcon/>
         </div>
         <div :class="$style.tripName">
             {{ trip.name }}
@@ -21,24 +39,6 @@
         </div>
     </div>
 </template>
-
-<script lang="ts">
-    import { defineComponent } from 'vue';
-    import editIcon from '@/icons/edit_icon.svg';
-
-    export default defineComponent({
-        name: 'TripCard',
-        components: {
-            editIcon,
-        },
-        props: {
-            trip: {
-                type: Object,
-                required: true,
-            }
-        },
-    });
-</script>
 
 <style module>
     .card {
@@ -95,6 +95,8 @@
         background-color: #FFEFD5;
         box-shadow: -1px 1px 0px 2px rgba(0, 0, 0, 0.25);
         border-radius: 10px 25px;
+
+        cursor: pointer;
     }
     .tripStats {
         display: grid;

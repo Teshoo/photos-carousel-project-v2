@@ -1,78 +1,82 @@
+<script setup lang="ts">
+    import { ref, watch, type Ref } from 'vue';
+    import type { TripDay } from '@/js/types/types';
+    import { useDayStore } from '@/js/stores/DayStore';
+    import { usePictureStore } from '@/js/stores/PictureStore';
+    import { cloneDay } from '@/js/services/day.service';
+    import EditPictureCard from '@/js/components/edit/EditPictureCard.vue';
+
+    const dayStore = useDayStore();
+    const pictureStore = usePictureStore();
+
+    const dayToEdit: Ref<TripDay> = ref(cloneCurrentDay());
+    const loading: Ref<Boolean> = ref(true);
+
+    browsePictures();
+
+    function browsePictures() {
+        pictureStore.browsePictures().then(() => loading.value = false);
+    }
+
+    function cloneCurrentDay() {
+        return cloneDay(dayStore.getCurrentDay.value);
+    }
+
+    function updateCurrentDay() {
+        if (dayStore.getCurrentDay.value.name !== dayToEdit.value.name) {
+            dayStore.updateCurrentDay(dayToEdit.value);
+        }
+    }
+
+    watch(
+        () => dayStore.getCurrentDay.value,
+        () => { 
+            browsePictures();
+            dayToEdit.value = cloneCurrentDay();
+        }
+    );
+</script>
+
 <template>
     <div :class="$style.container">
         <div 
             :class="$style.dayEdit"
-            v-if="currentDay"
+            v-if="dayStore.currentDay"
         >
             <div :class="$style.titles">
-                Day: 
+                Day:
             </div>
             <input 
                 :class="$style.dayNameInput"
                 type="text"
                 placeholder="day name"
-                v-model="currentDay.name" 
+                v-model="dayToEdit.name" 
             />
             <button
                 :class="{
                     [$style.dayNameButton]: true,
-                    [$style.dayNameButtonActive]: tempDayName !== currentDay.name, 
-                    [$style.dayNameButtonInactive]: tempDayName === currentDay.name,
+                    [$style.dayNameButtonActive]: dayToEdit.name !== dayStore.getCurrentDay.value.name, 
+                    [$style.dayNameButtonInactive]: dayToEdit.name === dayStore.getCurrentDay.value.name,
                 }"
                 type="submit"
-                @click="
-                    currentDay.name !== tempDayName ? updateCurrentDay : null, 
-                    tempDayName = currentDay.name
-                "
+                @click="updateCurrentDay()"
             >
                 Save
             </button>
         </div>
-        <div 
-            :class="$style.picturesContainer"
-            v-if="currentDay"
-        >
-            <div :class="$style.titles">
-                Day's pictures: 
+        <div :class="$style.picturesContainer">
+            <div
+                :class="$style.titles"
+                v-if="loading === false"
+            >
+                Pictures: 
             </div>
-            <div v-for="picture in pictures">
+            <div v-for="picture in pictureStore.getPictures.value">
                 <EditPictureCard :picture="picture"/>
             </div>
         </div>
     </div>
 </template>
-
-<script lang="ts">
-    import { defineComponent } from 'vue';
-    import { mapState, mapStores, mapActions } from 'pinia';
-    import { useDayStore } from '@/js/stores/DayStore';
-    import { usePictureStore } from '@/js/stores/PictureStore';
-    import EditPictureCard from '@/js/components/edit/EditPictureCard.vue';
-
-    export default defineComponent({
-        name: 'EditDay',
-        components: {
-            EditPictureCard,
-        },
-        created() {
-            this.$watch(
-                () => this.$route.params,
-                () => {
-                    this.DayStore.browseCurrentDay(this.$route.params.dayId);
-                    this.PictureStore.browsePictures(this.$route.params.dayId);
-                },
-                { immediate: true }
-            )
-        },
-        computed: {
-            ...mapState(useDayStore, ['currentDay', 'tempDayName']),
-            ...mapStores(useDayStore),
-            ...mapActions(useDayStore, ['updateCurrentDay']),
-            ...mapState(usePictureStore, ['pictures']),
-            ...mapStores(usePictureStore),
-        },
-    });
-</script>
 
 <style module>
     .container {

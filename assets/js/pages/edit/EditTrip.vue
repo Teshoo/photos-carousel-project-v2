@@ -1,78 +1,82 @@
+<script setup lang="ts">
+    import { ref, watch, type Ref } from 'vue';
+    import { useTripStore } from '@/js/stores/TripStore';
+    import { useStageStore } from '@/js/stores/StageStore';
+    import EditStageCard from '@/js/components/edit/EditStageCard.vue';
+    import { cloneTrip } from '@/js/services/trip.service';
+    import type { Trip } from '@/js/types/types';
+
+    const tripStore = useTripStore();
+    const stageStore = useStageStore();
+
+    const tripToEdit: Ref<Trip> = ref(cloneCurrentTrip());
+    const loading: Ref<Boolean> = ref(true);
+
+    browseStages();
+
+    function browseStages() {
+        stageStore.browseStages().then(() => loading.value = false);
+    }
+
+    function cloneCurrentTrip() {
+        return cloneTrip(tripStore.getCurrentTrip.value);
+    }
+
+    function updateCurrentTrip() {
+        if (tripStore.getCurrentTrip.value.name !== tripToEdit.value.name) {
+            tripStore.updateCurrentTrip(tripToEdit.value);
+        }
+    }
+
+    watch(
+        () => tripStore.getCurrentTrip.value,
+        () => { 
+            browseStages();
+            tripToEdit.value = cloneCurrentTrip();
+        }
+    );
+</script>
+
 <template>
-    <div :class="$style.container">
-        <div 
-            :class="$style.tripEdit"
-            v-if="currentTrip"
-        >
+    <div 
+        :class="$style.container" 
+        v-if="tripStore.getCurrentTrip"
+    >
+        <div :class="$style.tripEdit">
             <div :class="$style.titles">
-                Trip : 
+                Trip: 
             </div>
             <input 
                 :class="$style.tripNameInput"
                 type="text"
                 placeholder="trip name"
-                v-model="currentTrip.name" 
+                v-model="tripToEdit.name" 
             />
             <button
                 :class="{
                     [$style.tripNameButton]: true,
-                    [$style.tripNameButtonActive]: tempTripName !== currentTrip.name, 
-                    [$style.tripNameButtonInactive]: tempTripName === currentTrip.name,
+                    [$style.tripNameButtonActive]: tripToEdit.name !== tripStore.getCurrentTrip.value.name, 
+                    [$style.tripNameButtonInactive]: tripToEdit.name === tripStore.getCurrentTrip.value.name,
                 }"
                 type="submit"
-                @click="
-                    currentTrip.name !== tempTripName ? updateCurrentTrip : null, 
-                    tempTripName = currentTrip.name
-                "
+                @click="updateCurrentTrip()"
             >
                 Save
             </button>
         </div>
-        <div 
-            :class="$style.stagesContainer"
-            v-if="currentTrip"
-        >
-            <div :class="$style.titles">
-                Trip's stages : 
+        <div :class="$style.stagesContainer">
+            <div 
+                :class="$style.titles"
+                v-if="loading === false"
+            >
+                Stages: 
             </div>
-            <div v-for="stage in stages">
-                <EditStageCard :tripStage="stage"/>
+            <div v-for="stage in stageStore.getStages.value">
+                <EditStageCard :stage="stage"/>
             </div>
         </div>
     </div>
 </template>
-
-<script lang="ts">
-    import { defineComponent } from 'vue';
-    import { mapState, mapStores, mapActions } from 'pinia';
-    import { useTripStore } from '@/js/stores/TripStore';
-    import { useStageStore } from '@/js/stores/StageStore';
-    import EditStageCard from '@/js/components/edit/EditStageCard.vue';
-
-    export default defineComponent({
-        name: 'EditTrip',
-        components: {
-            EditStageCard,
-        },
-        created() {
-            this.$watch(
-                () => this.$route.params,
-                () => {
-                    this.TripStore.browseCurrentTrip(this.$route.params.tripId);
-                    this.StageStore.browseStages(this.$route.params.tripId);
-                },
-                { immediate: true }
-            )
-        },
-        computed: {
-            ...mapState(useTripStore, ['currentTrip', 'tempTripName']),
-            ...mapStores(useTripStore),
-            ...mapActions(useTripStore, ['updateCurrentTrip']),
-            ...mapState(useStageStore, ['stages']),
-            ...mapStores(useStageStore),
-        },
-    });
-</script>
 
 <style module>
     .container {

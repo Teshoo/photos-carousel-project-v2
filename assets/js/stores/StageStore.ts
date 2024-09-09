@@ -1,53 +1,48 @@
 export {}
 
+import { computed, ref, type Ref } from 'vue';
 import { defineStore } from 'pinia';
-
-import { fetchStages, fetchStage, updateStage } from '@/js/services/stage-service';
 import type { TripStage } from '@/js/types/types';
+import { useTripStore } from '@/js/stores/TripStore';
+import { fetchStages, fetchStage, updateStage } from '@/js/services/stage.service';
 
-export const useStageStore = defineStore('Stage', {
-    state: () => {
-        return {
-            stages: {} as Array<TripStage>,
-            currentStage: {} as TripStage,
-            tempStageName: '' as string
-        };
-    },
-    getters: {
-        getStages(state) {
-            return state.stages;
-        }
-    },
-    actions: {
-        async browseStages(tripId: any) {
-            let tripIri: string = 'api/trips/' + tripId;
-            try {
-                const response = await fetchStages(tripIri);
-                this.stages = response.data['hydra:member'];
-            } catch (error) {
-                console.log('Something went wrong during stages loading');
-            }
-        },
-        async browseCurrentStage(id: any) {
-            try {
-                const response = await fetchStage(id);
-                this.currentStage = response.data;
-                this.tempStageName = this.currentStage.name;
-            } catch (error) {
-                console.log('Something went wrong during the stage loading');
-            }
-        },
-        async updateCurrentStage() {
-            try {
-                const response = await updateStage(this.currentStage['@id'], this.currentStage);
-                this.currentStage = response.data;
-                this.tempStageName = this.currentStage.name;
-                
-                let currentTripId = this.currentStage.trip.replace('/api/trips/','');
-                this.browseStages(currentTripId);
-            } catch (error) {
-                console.log('Something went wrong during the stage update');
-            }
-        },
+export const useStageStore = defineStore('Stage', () => {
+    const tripStore = useTripStore();
+
+    // STATES
+    const stages: Ref<TripStage[]> = ref([]);
+    const currentStage: Ref<TripStage> = ref({
+        id: -1,
+        name: '',
+        lng: '',
+        lat: '',
+        trip: '',
+        tripDays: []
+    });
+
+    // GETTERS
+    const getStages = computed(() => stages);
+    const getCurrentStage = computed(() => currentStage);
+
+    // ACTIONS
+    async function browseStages() {
+        stages.value = await fetchStages(tripStore.getCurrentTrip.value.id);
     }
+
+    async function browseCurrentStage(id: number) {
+        if (currentStage.value.id === -1 || id !== currentStage.value.id) {
+            currentStage.value = await fetchStage(id);
+        }
+    }
+
+    async function editStage(stage: TripStage) {
+        await updateStage(stage).then(browseStages);
+    }
+
+    async function updateCurrentStage(stage: TripStage) {
+        currentStage.value = await updateStage(stage);
+        browseStages();
+    }
+
+    return { stages, currentStage, getStages, getCurrentStage, browseStages, browseCurrentStage, editStage, updateCurrentStage }
 });

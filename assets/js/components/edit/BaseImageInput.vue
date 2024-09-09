@@ -1,8 +1,38 @@
+<script setup lang="ts">
+    import { ref, useTemplateRef, type Ref } from 'vue';
+
+    const model = defineModel();
+    const emit = defineEmits(['input']);
+    const fileInput = useTemplateRef('fileInput');
+    const imageData: Ref<any> = ref(null);
+
+    function chooseImage() {
+        if (fileInput.value !== null) {
+            fileInput.value.click();
+        }
+    }
+
+    function onSelectFile() {
+        if (fileInput.value !== null) {
+            const files: FileList | null = fileInput.value.files;
+            if (files && files[0]) {
+                const reader = new FileReader;
+                reader.onload = e => {
+                    imageData.value = e.target?.result;
+                }
+                reader.readAsDataURL(files[0]);
+                emit('input', files[0]);
+                model.value = files[0]; 
+            }
+        }
+    }
+</script>
+
 <template>
     <div 
         :class="$style.baseImageInput"
         :style="{ backgroundImage: `url(${imageData})` }"
-        @click="chooseImage"
+        @click="chooseImage()"
     >
         <span 
             :class="$style.placeholder"
@@ -14,42 +44,10 @@
             :class="$style.fileInput"
             ref="fileInput"
             type="file"
-            @input="onSelectFile"
+            @input="onSelectFile()"
         >
     </div>
 </template>
-
-<script lang="ts">
-    import { defineComponent, ref } from 'vue';
-    import type { Ref } from 'vue';
-
-    export default defineComponent ({
-        name: 'BaseImageInput',
-        data () {
-            return {
-                imageData: null as any,
-                fileInput: ref(null) as Ref<HTMLElement | null>,
-            }
-        },
-        methods: {
-            chooseImage () {
-                this.$refs.fileInput.click();
-            },
-            onSelectFile () {
-                const input = this.$refs.fileInput;
-                const files = input.files;
-                if (files && files[0]) {
-                    const reader = new FileReader;
-                    reader.onload = e => {
-                        this.imageData = e.target?.result;
-                    }
-                    reader.readAsDataURL(files[0]);
-                    this.$emit('input', files[0]);
-                }
-            },
-        }
-    })
-</script>
 
 <style module>
     .baseImageInput {

@@ -1,3 +1,37 @@
+<script setup lang="ts">
+    import { computed, ref, type Ref } from 'vue';
+    import type { Picture } from '@/js/types/types';
+    import { usePictureStore } from '@/js/stores/PictureStore';
+    import { clonePicture } from '@/js/services/picture.service';
+    import BaseImageInput from '@/js/components/edit/BaseImageInput.vue';
+
+    const pictureStore = usePictureStore();
+
+    const props = defineProps<{ picture: Picture }>();
+
+    const pictureToEdit: Ref<Picture> = ref(clonePictureToEdit());
+    const googleMapUrl: String = 'https://google.com/maps';
+    const imageFile: Ref<any> = ref(null);
+
+    const pictureModified = computed(
+        () =>   JSON.stringify(props.picture) !== JSON.stringify(pictureToEdit.value)
+                || imageFile.value !== null
+    );
+    
+    function editPicture() {
+        if (pictureModified) {
+            pictureStore.editPicture(pictureToEdit.value);
+            console.log(imageFile.value);
+        }
+    }
+
+    function clonePictureToEdit() {
+        const picture: Picture = clonePicture(props.picture);
+        picture.shotTime = picture.shotTime.slice(0,19);
+        return picture;
+    }
+</script>
+
 <template>
     <div :class="$style.container">
         <div :class="$style.pictureCard">
@@ -12,13 +46,13 @@
                         [$style.pictureCardInputName]: true,
                     }"
                     placeholder="picture name"
-                    v-model="cardPicture.name"
+                    v-model="pictureToEdit.name"
                 ></textarea>
                 <input 
                     :class="$style.pictureCardInputs"
                     type="datetime-local"
                     step="1"
-                    v-model="cardPicture.shotTime"
+                    v-model="pictureToEdit.shotTime"
                 />
             </div>
             <div :class="$style.rightPictureCard">
@@ -31,7 +65,7 @@
                             }"
                             type="text"
                             placeholder="picture lat"
-                            v-model="cardPicture.lat"
+                            v-model="pictureToEdit.lat"
                         />
                         <input
                             :class="{
@@ -40,7 +74,7 @@
                             }"
                             type="text"
                             placeholder="picture lng"
-                            v-model="cardPicture.lng"
+                            v-model="pictureToEdit.lng"
                         />
                     </div>
                     <a :url="googleMapUrl">
@@ -59,14 +93,11 @@
             <button
                 :class="{
                     [$style.pictureCardBtn]: true,
-                    [$style.pictureCardSaveBtnActive]: tempPicture.name !== cardPicture.name, 
-                    [$style.pictureCardSaveBtnInactive]: tempPicture.name === cardPicture.name,
+                    [$style.pictureCardSaveBtnActive]: pictureModified, 
+                    [$style.pictureCardSaveBtnInactive]: !pictureModified,
                 }"
                 type="submit"
-                @click="
-                    cardPicture.name !== tempPicture.name ? updatePicture() : null, 
-                    tempPicture.name = cardPicture.name
-                "
+                @click="editPicture()"
             >
                 Save
             </button>
@@ -81,60 +112,6 @@
         </div>
     </div>
 </template>
-
-<script lang="ts">
-    import { defineComponent } from 'vue';
-    import type { PropType } from 'vue';
-    import type { Picture } from '@/js/types/types';
-    import { updatePicture } from '@/js/services/picture-service';
-    import BaseImageInput from '@/js/components/edit/BaseImageInput.vue';
-
-    export default defineComponent({
-        name: 'EditPictureCard',
-        components: {
-            BaseImageInput,
-        },
-        props: {
-            picture: { 
-                type: Object as PropType<Picture>,
-                required: true,
-            },
-        },
-        data() {
-            return {
-                cardPicture: {} as Picture,
-                tempPicture: {} as Picture, // use to detect changes in input contents
-                googleMapUrl: 'https://google.com/maps' as String,
-                imageFile: null,
-            };
-        },
-        created() {
-            this.cardPicture.name = this.picture.name;
-            this.cardPicture.shotTime = this.picture.shotTime.slice(0,19);
-            this.cardPicture.lat = this.picture.lat;
-            this.cardPicture.lng = this.picture.lng;
-            this.cardPicture.extras = [];
-
-            this.tempPicture.name = this.picture.name;
-            this.tempPicture.shotTime = this.picture.shotTime;
-            this.tempPicture.lat = this.picture.lat;
-            this.tempPicture.lng = this.picture.lng;
-        },
-        
-        methods: {
-            async updatePicture() {
-                try {
-                    const response = await updatePicture(this.picture['@id'], this.cardPicture);
-                    this.cardPicture = response.data;
-                    this.cardPicture.shotTime = this.cardPicture.shotTime.slice(0,19);
-                    this.tempPicture.name = this.cardPicture.name;
-                } catch (error) {
-                    console.log('Something went wrong during the stage update');
-                }
-            }
-        }
-    });
-</script>
 
 <style module>
     .container {

@@ -1,30 +1,28 @@
 export {}
 
+import { computed, ref, type Ref } from 'vue';
 import { defineStore } from 'pinia';
-
-import { fetchPictures } from '@/js/services/picture-service';
 import type { Picture } from '@/js/types/types';
+import { useDayStore } from './DayStore';
+import { fetchPictures, updatePicture } from '@/js/services/picture.service';
 
-export const usePictureStore = defineStore('Picture', {
-    state: () => {
-        return {
-            pictures: {} as Array<Picture>,
-        };
-    },
-    getters: {
-        getPictures(state) {
-            return state.pictures;
-        }
-    },
-    actions: {
-        async browsePictures(dayId: any) {
-            let dayIri: string = 'api/trip_days/' + dayId;
-            try {
-                const response = await fetchPictures(dayIri);
-                this.pictures = response.data['hydra:member'];
-            } catch (error) {
-                console.log('Something went wrong during pictures loading');
-            }
-        },
+export const usePictureStore = defineStore('Picture', () => {
+    const dayStore = useDayStore();
+
+    // STATES
+    const pictures: Ref<Picture[]> = ref([]);
+
+    // GETTERS
+    const getPictures = computed(() => pictures);
+    
+    // ACTIONS
+    async function browsePictures() {
+        pictures.value = await fetchPictures(dayStore.getCurrentDay.value.id);
     }
+
+    async function editPicture(picture: Picture) {
+        await updatePicture(picture).then(browsePictures);
+    }
+
+    return { pictures, getPictures, browsePictures, editPicture }
 });

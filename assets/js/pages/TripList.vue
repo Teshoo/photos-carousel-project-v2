@@ -1,17 +1,56 @@
+<script setup lang="ts">
+    import { ref, type Ref } from 'vue';
+    import type { Trip } from '@/js/types/types';
+    import { useTripStore } from '@/js/stores/TripStore';
+    import { createNewTrip } from '@/js/pages/TripList.service';
+    import TripCard from '@/js/components/TripCard.vue';
+    import newTripIcon from '@/icons/new_trip_icon.svg';
+    import newTripHoverIcon from '@/icons/new_trip_hover_icon.svg';
+
+    let trips: Ref<Trip[]>;
+    let hover: Ref<Boolean> = ref(false);
+    let loading: Ref<Boolean> = ref(true);
+    let loadingNewTrip: Ref<Boolean> = ref(false);
+
+    const tripStore = useTripStore();
+
+    browseTrips();
+
+    async function browseTrips() {
+        await tripStore.browseTrips();
+        trips = tripStore.getTrips;
+        loading.value = false;
+    }
+
+    async function addNewTrip() {
+        trips.value = await createNewTrip(trips.value);
+        loadingNewTrip.value = false;
+    }
+
+</script>
+
 <template>
     <div :class="$style.container">
         <div :class="$style.title">
             VOYAGES :
         </div>
-        <div :class="$style.tripCards">
+        <div v-if="loading === true" :class="$style.loading">
+            Loading...
+        </div>
+        <div v-if="loading === false" :class="$style.tripCards">
             <div
                 v-for="trip in trips"
             >
-                <trip-card :trip="trip" :key="trip[`@id`]"/> 
+                <trip-card :trip="trip" :key="trip.id"/> 
+            </div>
+            <div v-if="loadingNewTrip === true" :class="$style.newTripCard">
+                <div :class="$style.loading">
+                    Creating...
+                </div>
             </div>
             <div 
                 :class="$style.newTripCard"
-                @click="addTrip"
+                @click="loadingNewTrip = true; addNewTrip()"
                 @mouseover="hover = true"
                 @mouseleave="hover = false"
             >
@@ -25,53 +64,6 @@
         </div>
     </div>
 </template>
-
-<script lang="ts">
-    import { defineComponent } from 'vue';
-    import { fetchTrips, addTrip } from '@/js/services/trip-service';
-    import type { Trip } from '@/js/types/types';
-    import TripCard from '@/js/components/TripCard.vue';
-    import newTripIcon from '@/icons/new_trip_icon.svg';
-    import newTripHoverIcon from '@/icons/new_trip_hover_icon.svg';
-
-    export default defineComponent({
-        name: 'TripList',
-        components: {
-            TripCard,
-            newTripIcon,
-            newTripHoverIcon,
-        },
-        data() {
-            return {
-                trips: {} as Array<Trip>,
-                newTrip: {} as Trip,
-                hover: false as Boolean,
-            }
-        },
-        created() {
-            this.displayTrips();
-        },
-        methods: {
-            async displayTrips() {
-                try {
-                    const response = await fetchTrips();
-                    this.trips = response.data['hydra:member'];
-                } catch (error) {
-                    console.log('Something went wrong during trips loading');
-                }
-            },
-            async addTrip() {
-                try {
-                    const response = await addTrip();
-                    this.newTrip = response.data;
-                    this.trips.push(this.newTrip);
-                } catch (error) {
-                    console.log('Something went wrong during the trip creation');
-                }
-            }
-        },
-    });
-</script>
 
 <style module>
     .container {
@@ -106,6 +98,18 @@
         height: 150px;
 
         cursor: pointer;
+    }
+    .loading {
+        display: grid;
+        grid-template-columns: 1fr;
+        justify-items: center;
 
+        font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+        font-size: 24px;
+        font-weight: 700;
+        line-height: 28px;
+        letter-spacing: 0.1em;
+        text-align: left;
+        color: #FFF;
     }
 </style>

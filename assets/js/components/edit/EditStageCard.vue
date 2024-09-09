@@ -1,3 +1,33 @@
+<script setup lang="ts">
+    import { ref, type Ref } from 'vue';
+    import { useRouter } from 'vue-router';
+    import type { TripStage } from '@/js/types/types';
+    import { useStageStore } from '@/js/stores/StageStore';
+    import { cloneStage } from '@/js/services/stage.service';
+
+    const router = useRouter();
+    const stageStore = useStageStore();
+    
+    const props = defineProps<{ stage: TripStage }>();
+
+    const stageToEdit: Ref<TripStage> = ref(cloneStageToEdit());
+
+    function editStage() {
+        if (props.stage.name !== stageToEdit.value.name) {
+            stageStore.editStage(stageToEdit.value);
+        }
+    }
+
+    function cloneStageToEdit() {
+        return cloneStage(props.stage);
+    }
+
+    async function changeCurrentStage() {
+        await stageStore.browseCurrentStage(props.stage.id);
+        router.push({ name: 'editStage', params: { stageId: stageStore.getCurrentStage.value.id } });
+    }
+</script>
+
 <template>
     <div :class="$style.container">
         <div :class="$style.stageCard">
@@ -5,71 +35,26 @@
             :class="$style.stageNameInput"
             type="text"
             placeholder="stage name"
-            v-model="stage.name"
+            v-model="stageToEdit.name"
         />
     </div>
     <button
         :class="{
             [$style.stageCardSaveBtn]: true,
-            [$style.stageCardSaveBtnActive]: tempStage.name !== stage.name, 
-            [$style.stageCardSaveBtnInactive]: tempStage.name === stage.name,
+            [$style.stageCardSaveBtnActive]: stageToEdit.name !== stage.name, 
+            [$style.stageCardSaveBtnInactive]: stageToEdit.name === stage.name,
         }"
         type="submit"
-        @click="
-            stage.name !== tempStage.name ? updateStage() : null, 
-            tempStage.name = stage.name
-        "
+        @click="editStage()"
     >
         Save
     </button>
     
-    <button v-if="stage">
-        <router-link :to="{ name: 'editStage', params: { stageId: stage.id }}">
-                View
-        </router-link>
+    <button @click="changeCurrentStage()">
+        View
     </button>
     </div>
 </template>
-
-<script lang="ts">
-    import { defineComponent } from 'vue';
-    import type { PropType } from 'vue';
-    import type { TripStage } from '@/js/types/types';
-    import { updateStage } from '@/js/services/stage-service';
-
-    export default defineComponent({
-        name: 'EditStageCard',
-        props: {
-            tripStage: { 
-                type: Object as PropType<TripStage>,
-                required: true,
-            },
-        },
-        data() {
-            return {
-                stage: {} as TripStage,
-                tempStage: {} as TripStage,
-            };
-        },
-        created() {
-            this.stage.id = this.tripStage.id;
-            this.stage.name = this.tripStage.name;
-            this.stage.tripDays = [];
-            this.tempStage.name = this.tripStage.name;
-        },
-        methods: {
-            async updateStage() {
-                try {
-                    const response = await updateStage(this.tripStage['@id'], this.stage);
-                    this.stage = response.data;
-                    this.tempStage.name = this.stage.name;
-                } catch (error) {
-                    console.log('Something went wrong during the stage update');
-                }
-            }
-        }
-    });
-</script>
 
 <style module>
     .container {

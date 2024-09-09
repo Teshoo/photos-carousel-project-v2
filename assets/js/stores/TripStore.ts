@@ -1,50 +1,40 @@
 export {}
 
+import { computed, type Ref, ref } from 'vue';
 import { defineStore } from 'pinia';
-
-import { fetchTrips, fetchTrip, updateTrip } from '@/js/services/trip-service';
 import type { Trip } from '@/js/types/types';
+import { fetchTrips, fetchTrip, updateTrip } from '@/js/services/trip.service';
 
-export const useTripStore = defineStore('Trip', {
-    state: () => {
-        return {
-            trips: {} as Array<Trip>,
-            currentTrip: {} as Trip,
-            tempTripName: '' as string
-        };
-    },
-    getters: {
-        getTrips(state) {
-            return state.trips;
-        }
-    },
-    actions: {
-        async browseTrips() {
-            try {
-                const response = await fetchTrips();
-                this.trips = response.data['hydra:member'];
-            } catch (error) {
-                console.log('Something went wrong during trips loading');
-            }
-        },
-        async browseCurrentTrip(id: any) {
-            try {
-                const response = await fetchTrip(id);
-                this.currentTrip = response.data;
-                this.tempTripName = this.currentTrip.name;
-            } catch (error) {
-                console.log('Something went wrong during the trip loading');
-            }
-        },
-        async updateCurrentTrip() {
-            try {
-                const response = await updateTrip(this.currentTrip['@id'], this.currentTrip);
-                this.currentTrip = response.data;
-                this.tempTripName = this.currentTrip.name;
-                this.browseTrips();
-            } catch (error) {
-                console.log('Something went wrong during the trip update');
-            }
-        },
+export const useTripStore = defineStore('Trip', () => {
+
+    // STATES
+    const trips: Ref<Trip[]> = ref([]);
+    const currentTrip: Ref<Trip> = ref({
+        id: -1,
+        name: '',
+        tripStages: [],
+        extras: []
+    });
+
+    // GETTERS
+    const getTrips = computed(() => trips);
+    const getCurrentTrip = computed(() => currentTrip);
+
+    // ACTIONS
+    async function browseTrips() {
+        trips.value = await fetchTrips();
     }
+
+    async function browseCurrentTrip(id: number) {
+        if (currentTrip.value.id === -1 || id !== currentTrip.value.id) {
+            currentTrip.value = await fetchTrip(id);
+        }
+    }
+
+    async function updateCurrentTrip(trip: Trip) {
+        currentTrip.value = await updateTrip(trip);
+        browseTrips();
+    }
+
+    return { trips, currentTrip, getTrips, getCurrentTrip, browseTrips, browseCurrentTrip, updateCurrentTrip } 
 });

@@ -1,8 +1,47 @@
+<script setup lang="ts">
+    import { ref, watch, type Ref } from 'vue';
+    import { useStageStore } from '@/js/stores/StageStore';
+    import { useDayStore } from '@/js/stores/DayStore';
+    import EditDayCard from '@/js/components/edit/EditDayCard.vue';
+    import type { TripStage } from '@/js/types/types';
+    import { cloneStage } from '@/js/services/stage.service';
+
+    const stageStore = useStageStore();
+    const dayStore = useDayStore();
+
+    const stageToEdit: Ref<TripStage> = ref(cloneCurrentStage());
+    const loading: Ref<Boolean> = ref(true);
+
+    browseDays();
+
+    function browseDays() {
+        dayStore.browseDays().then(() => loading.value = false);
+    }
+
+    function cloneCurrentStage() {
+        return cloneStage(stageStore.getCurrentStage.value);
+    }
+
+    function updateCurrentStage() {
+        if (stageStore.getCurrentStage.value.name !== stageToEdit.value.name) {
+            stageStore.updateCurrentStage(stageToEdit.value);
+        }
+    }
+
+    watch(
+        () => stageStore.getCurrentStage.value,
+        () => { 
+            browseDays();
+            stageToEdit.value = cloneCurrentStage();
+        }
+    );
+</script>
+
 <template>
     <div :class="$style.container">
         <div 
             :class="$style.stageEdit"
-            v-if="currentStage"
+            v-if="stageStore.getCurrentStage"
         >
             <div :class="$style.titles">
                 Stage: 
@@ -11,68 +50,33 @@
                 :class="$style.stageNameInput"
                 type="text"
                 placeholder="stage name"
-                v-model="currentStage.name" 
+                v-model="stageToEdit.name"
             />
             <button
                 :class="{
                     [$style.stageNameButton]: true,
-                    [$style.stageNameButtonActive]: tempStageName !== currentStage.name, 
-                    [$style.stageNameButtonInactive]: tempStageName === currentStage.name,
+                    [$style.stageNameButtonActive]: stageToEdit.name !== stageStore.getCurrentStage.value.name, 
+                    [$style.stageNameButtonInactive]: stageToEdit.name === stageStore.getCurrentStage.value.name,
                 }"
                 type="submit"
-                @click="
-                    currentStage.name !== tempStageName ? updateCurrentStage : null, 
-                    tempStageName = currentStage.name
-                "
+                @click="updateCurrentStage()"
             >
                 Save
             </button>
         </div>
-        <div 
-            :class="$style.daysContainer"
-            v-if="currentStage"
-        >
-            <div :class="$style.titles">
-                Stage's days: 
+        <div :class="$style.daysContainer">
+            <div
+                :class="$style.titles"
+                v-if="loading === false"
+            >
+                Days: 
             </div>
-            <div v-for="day in days">
-                <EditDayCard :tripDay="day"/>
+            <div v-for="day in dayStore.getDays.value">
+                <EditDayCard :day="day"/>
             </div>
         </div>
     </div>
 </template>
-
-<script lang="ts">
-    import { defineComponent } from 'vue';
-    import { mapState, mapStores, mapActions } from 'pinia';
-    import { useStageStore } from '@/js/stores/StageStore';
-    import { useDayStore } from '@/js/stores/DayStore';
-    import EditDayCard from '@/js/components/edit/EditDayCard.vue';
-
-    export default defineComponent({
-        name: 'EditStage',
-        components: {
-            EditDayCard,
-        },
-        created() {
-            this.$watch(
-                () => this.$route.params,
-                () => {
-                    this.StageStore.browseCurrentStage(this.$route.params.stageId);
-                    this.DayStore.browseDays(this.$route.params.stageId);
-                },
-                { immediate: true }
-            )
-        },
-        computed: {
-            ...mapState(useStageStore, ['currentStage', 'tempStageName']),
-            ...mapStores(useStageStore),
-            ...mapActions(useStageStore, ['updateCurrentStage']),
-            ...mapState(useDayStore, ['days']),
-            ...mapStores(useDayStore),
-        },
-    });
-</script>
 
 <style module>
     .container {

@@ -1,83 +1,116 @@
+<script setup lang="ts">
+    import { useRoute, useRouter } from 'vue-router';
+    import type { Trip, TripStage, TripDay } from '@/js/types/types';
+    import { useTripStore } from '@/js/stores/TripStore';
+    import { useStageStore } from '@/js/stores/StageStore';
+    import { useDayStore } from '@/js/stores/DayStore';
+    import chevronbcUrl from '@/icons/chevron_breadcrumb.svg';
+    import chevrondpnUrl from '@/icons/chevron_dropdownmenu.svg';
+    import homeIcon from '@/icons/home_icon.svg';
+
+    const route = useRoute();
+    const router = useRouter();
+
+    const tripStore = useTripStore();
+    const stageStore = useStageStore();
+    const dayStore = useDayStore();
+
+    async function changeCurrentTrip(trip: Trip) {
+        await tripStore.browseCurrentTrip(trip.id);
+        router.push({ name: 'editTrip', params: { tripId: tripStore.getCurrentTrip.value.id }});
+    }
+
+    async function changeCurrentStage(stage: TripStage) {
+        await stageStore.browseCurrentStage(stage.id);
+        router.push({ name: 'editStage', params: { stageId: stageStore.getCurrentStage.value.id }});
+    }
+
+    async function changeCurrentDay(day: TripDay) {
+        await dayStore.browseCurrentDay(day.id);
+        router.push({ name: 'editDay', params: { dayId: dayStore.getCurrentDay.value.id }});
+    }
+</script>
+
 <template>
     <div>
         <div :class="$style.headerMenu">
             <div>
                 <router-link to="/">
                     <div :class="$style.homepageButton">
-                        <div v-if="$route.params.tripId">
+                        <div v-if="route.params.tripId">
                             <homeIcon/>
                         </div>
                         <div 
                             :class="$style.homepageButtonTitle" 
-                            v-if="!($route.params.tripId)"
+                            v-if="!(route.params.tripId)"
                         >
-                            {{ title }}
+                            Picture Carousel
                         </div>
                     </div>
                 </router-link>
             </div>
-            <chevronbcUrl v-if="$route.params.tripId"/>
+            <chevronbcUrl v-if="route.params.tripId"/>
             <div
                 :class="$style.editingLabel" 
-                v-if="$route.params.tripId"
+                v-if="route.params.tripId"
             >
                 Editing
             </div>
-            <chevronbcUrl v-if="$route.params.tripId"/>
+            <chevronbcUrl v-if="route.params.tripId"/>
             <div
-                v-if="$route.params.tripId" 
+                v-if="route.params.tripId && stageStore.getCurrentStage.value.id" 
                 :class="$style.dropdown"
             >
                 <div :class="$style.dropbtn">
-                    {{ currentTrip.name }}
+                    {{ tripStore.getCurrentTrip.value.name }}
                     <chevrondpnUrl/>
                 </div>
                 <div :class="$style.dropdownContent">
                     <div 
                         :class="$style.dropdownItem" 
-                        v-for="trip in trips" 
-                        :key="trip[`@id`]" 
-                        @click="tripId = trip.id"
+                        v-for="trip in tripStore.getTrips.value" 
+                        :key="trip.id" 
+                        @click="changeCurrentTrip(trip)"
                     >
                         {{ trip.name }}
                     </div>
                 </div>
             </div>
-            <chevronbcUrl v-if="$route.params.stageId"/>
+            <chevronbcUrl v-if="route.params.stageId"/>
             <div
-                v-if="$route.params.stageId" 
+                v-if="route.params.stageId" 
                 :class="$style.dropdown"
             >
                 <div :class="$style.dropbtn">
-                    {{ currentStage.name }}
+                    {{ stageStore.getCurrentStage.value.name }}
                     <chevrondpnUrl/>
                 </div>
                 <div :class="$style.dropdownContent">
                     <div 
                         :class="$style.dropdownItem" 
-                        v-for="stage in stages" 
-                        :key="stage[`@id`]" 
-                        @click="stageId = stage.id"
+                        v-for="stage in stageStore.getStages.value" 
+                        :key="stage.id" 
+                        @click="changeCurrentStage(stage)"
                     >
                         {{ stage.name }}
                     </div>
                 </div>
             </div>
-            <chevronbcUrl v-if="$route.params.dayId"/>
+            <chevronbcUrl v-if="route.params.dayId"/>
             <div
-                v-if="$route.params.dayId" 
+                v-if="route.params.dayId" 
                 :class="$style.dropdown"
             >
                 <div :class="$style.dropbtn">
-                    {{ currentDay.name }}
+                    {{ dayStore.getCurrentDay.value.name }}
                     <chevrondpnUrl/>
                 </div>
                 <div :class="$style.dropdownContent">
                     <div 
                         :class="$style.dropdownItem" 
-                        v-for="day in days" 
-                        :key="day[`@id`]" 
-                        @click="dayId = day.id"
+                        v-for="day in dayStore.getDays.value" 
+                        :key="day.id" 
+                        @click="changeCurrentDay(day)"
                     >
                         {{ day.name }}
                     </div>
@@ -86,58 +119,6 @@
         </div>
     </div>
 </template>
-
-<script lang="ts">
-    import { defineComponent } from 'vue';
-    import { mapState, mapStores } from 'pinia';
-    import { useTripStore } from '@/js/stores/TripStore';
-    import { useStageStore } from '@/js/stores/StageStore';
-    import { useDayStore } from '@/js/stores/DayStore';
-    import chevronbcUrl from '@/icons/chevron_breadcrumb.svg';
-    import chevrondpnUrl from '@/icons/chevron_dropdownmenu.svg';
-    import homeIcon from '@/icons/home_icon.svg';
-    
-    export default defineComponent({
-        name: 'TheHeader',
-        components: {
-            homeIcon,
-            chevronbcUrl,
-            chevrondpnUrl,
-        },
-        props: {
-            title: { type: String, required: true }
-        },
-        data() {
-            return {
-                tripId: null as number|null,
-                stageId: null as number|null,
-                dayId: null as number|null,
-            }
-        },
-        created() {
-            this.TripStore.browseTrips();
-        },
-        watch: {
-            tripId() {
-                this.$router.push({ name: 'editTrip', params: { tripId: this.tripId } })
-            },
-            stageId() {
-                this.$router.push({ name: 'editStage', params: { stageId: this.stageId } })
-            },
-            dayId() {
-                this.$router.push({ name: 'editDay', params: { dayId: this.dayId } })
-            },
-        },
-        computed: {
-            ...mapState(useTripStore, ['trips', 'currentTrip']),
-            ...mapStores(useTripStore),
-            ...mapState(useStageStore, ['stages', 'currentStage']),
-            ...mapStores(useStageStore),
-            ...mapState(useDayStore, ['days', 'currentDay']),
-            ...mapStores(useDayStore),
-        },
-    });
-</script>
 
 <style module>
     .headerMenu {
