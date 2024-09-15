@@ -25,6 +25,7 @@ use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
         new Put(),
         new Delete(),
     ],
+    formats: 'jsonld'
 )]
 #[ApiFilter (SearchFilter::class, properties: ['trip' => 'exact'])]
 class TripStage

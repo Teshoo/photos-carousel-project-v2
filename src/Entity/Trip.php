@@ -23,6 +23,7 @@ use ApiPlatform\Metadata\Delete;
         new Put(),
         new Delete(),
     ],
+    formats: 'jsonld'
 )]
 class Trip
 {

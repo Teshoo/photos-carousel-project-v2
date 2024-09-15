@@ -2,33 +2,50 @@
 
 namespace App\Entity;
 
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Metadata\ApiFilter;
+use ApiPlatform\Metadata\ApiProperty;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Delete;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
 use App\Repository\PictureRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\HttpFoundation\File\File;
-use Vich\UploaderBundle\Mapping\Annotation as Vich;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
-use ApiPlatform\Metadata\ApiResource;
-use ApiPlatform\Metadata\Get;
-use ApiPlatform\Metadata\GetCollection;
-use ApiPlatform\Metadata\Post;
-use ApiPlatform\Metadata\Put;
-use ApiPlatform\Metadata\Delete;
-use ApiPlatform\Metadata\ApiFilter;
-use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use Vich\UploaderBundle\Mapping\Annotation as Vich;
+
 
 #[ORM\Entity(repositoryClass: PictureRepository::class)]
 #[Vich\Uploadable]
 #[ApiResource(
+    normalizationContext: ['groups' => ['picture:read']], 
+    denormalizationContext: ['groups' => ['picture:write']], 
     operations: [
-        new Get(),
-        new GetCollection(),
-        new Post(),
-        new Put(),
-        new Delete(),
-    ],
+        new Get(
+            formats: 'jsonld'
+        ),
+        new GetCollection(
+            formats: 'jsonld',
+            order: ['shotTime' => 'ASC']
+        ),
+        new Post(
+            outputFormats: ['jsonld' => ['application/ld+json']],
+            inputFormats: ['multipart' => ['multipart/form-data']]
+        ),
+        new Put(
+            formats: 'jsonld'
+        ),
+        new Delete(
+            formats: 'jsonld'
+        ),
+    ]
 )]
 #[ApiFilter (SearchFilter::class, properties: ['tripDay' => 'exact'])]
 class Picture
@@ -36,24 +53,31 @@ class Picture
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['picture:read'])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['picture:write', 'picture:read'])]
     private ?string $name = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[Groups(['picture:write', 'picture:read'])]
     private ?\DateTimeInterface $shotTime = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['picture:write', 'picture:read'])]
     private ?string $lat = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['picture:write', 'picture:read'])]
     private ?string $lng = null;
 
     #[Vich\UploadableField(mapping: 'pictures', fileNameProperty: 'imageName', size: 'imageSize')]
+    #[Groups(['picture:write'])]
     private ?File $imageFile = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Groups(['picture:read'])]
     private ?string $imageName = null;
 
     #[ORM\Column(nullable: true)]
@@ -64,9 +88,11 @@ class Picture
 
     #[ORM\ManyToOne(inversedBy: 'pictures')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['picture:write', 'picture:read'])]
     private ?TripDay $tripDay = null;
 
     #[ORM\ManyToMany(targetEntity: Extra::class, inversedBy: 'pictures')]
+    #[Groups(['picture:read'])]
     private Collection $extras;
 
     public function __construct()
@@ -133,12 +159,6 @@ class Picture
     }
 
     /**
-     * If manually uploading a file (i.e. not using Symfony Form) ensure an instance
-     * of 'UploadedFile' is injected into this setter to trigger the update. If this
-     * bundle's configuration parameter 'inject_on_load' is set to 'true' this setter
-     * must be able to accept an instance of 'File' as the bundle will inject one here
-     * during Doctrine hydration.
-     *
      * @param File|\Symfony\Component\HttpFoundation\File\UploadedFile|null $imageFile
      */
     public function setImageFile(?File $imageFile = null): void
@@ -146,8 +166,6 @@ class Picture
         $this->imageFile = $imageFile;
 
         if (null !== $imageFile) {
-            // It is required that at least one field changes if you are using doctrine
-            // otherwise the event listeners won't be called and the file is lost
             $this->updatedAt = new \DateTimeImmutable();
         }
     }
