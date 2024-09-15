@@ -23,6 +23,27 @@ function fetchPicturesAPI(dayId: number): Promise<any> {
 }
 
 /**
+ * @param {Picture} pictureToCreate
+ * @param {File} imageFile
+ * @returns {Promise}
+ */
+function createPictureAPI(pictureToCreate: Picture, imageFile: File): Promise<any> {
+    const params: {[index: string]:any}= {};
+    params.name = pictureToCreate.name;
+    params.shotTime = pictureToCreate.shotTime;
+    params.lat = pictureToCreate.lat;
+    params.lng = pictureToCreate.lng;
+    params.tripDay = pictureToCreate.tripDay;
+    params.imageFile = imageFile;
+    const config = {
+        headers: {
+            'content-type': 'multipart/form-data'
+        }
+    }
+    return axios.post('/api/pictures', params, config );
+}
+
+/**
  * @param {Picture|null} picture
  * @returns {Promise}
  */
@@ -31,7 +52,20 @@ function updatePictureAPI(picture: Picture): Promise<any> {
     if (picture) {
         params.picture = picture;
     }
-    return axios.put('/api/pictures/' + picture.id, params.picture);
+    const config = {
+        headers: {
+            'content-type': 'application/ld+json'
+        }
+    }
+    return axios.put('/api/pictures/' + picture.id, params.picture, config);
+}
+
+/**
+ * @param {number|null} pictureId
+ * @returns {Promise}
+ */
+function deletePictureAPI(pictureId: number): Promise<any> {
+    return axios.delete('/api/pictures/' + pictureId);
 }
 
 ///////////////////////
@@ -67,6 +101,33 @@ export async function updatePicture(pictureToUpdate: Picture): Promise<any> {
 }
 
 /**
+ * @param {Picture} pictureToCreate
+ * @param {File} imageFile
+ * @returns {Promise}
+ */
+export async function createPicture(pictureToCreate: Picture, imageFile: File): Promise<any> {
+    try {
+        const response = await createPictureAPI(pictureToCreate, imageFile);
+        const picture: Picture = pictureAPIToPicture(response.data);
+        return picture;
+    } catch (error) {
+        console.log('Could not create picture: '+ error);
+    }
+}
+
+/**
+ * @param {Picture} pictureToDelete
+ * @returns {Promise}
+ */
+export async function deletePicture(pictureToDelete: Picture) {
+    try {
+        await deletePictureAPI(pictureToDelete.id);
+    } catch (error) {
+        console.log('Could not delete picture: '+ error);
+    }
+}
+
+/**
  * @param {PictureAPI} PictureAPI
  * @returns {Picture}
  */
@@ -77,6 +138,7 @@ export function pictureAPIToPicture(pictureAPI: PictureAPI): Picture {
         shotTime: pictureAPI.shotTime.slice(0,19),
         lat: pictureAPI.lat,
         lng: pictureAPI.lng,
+        imageName: pictureAPI.imageName,
         tripDay: pictureAPI.tripDay,
         extras: pictureAPI.extras
     };
@@ -124,6 +186,7 @@ export function clonePicture(picture: Picture): Picture {
         shotTime: picture.shotTime,
         lat: picture.lat,
         lng: picture.lng,
+        imageName: picture.imageName,
         tripDay: picture.tripDay,
         extras: picture.extras
     };

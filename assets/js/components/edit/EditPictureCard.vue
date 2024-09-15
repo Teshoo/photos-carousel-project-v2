@@ -8,6 +8,7 @@
     const pictureStore = usePictureStore();
 
     const props = defineProps<{ picture: Picture }>();
+    const emit = defineEmits<{ (e: 'newPictureToFalse'): void }>()
 
     const pictureToEdit: Ref<Picture> = ref(clonePictureToEdit());
     const googleMapUrl: String = 'https://google.com/maps';
@@ -18,11 +19,21 @@
                 || imageFile.value !== null
     );
     
-    function editPicture() {
-        if (pictureModified) {
-            pictureStore.editPicture(pictureToEdit.value);
-            console.log(imageFile.value);
+    async function editPicture() {
+        if (pictureModified) {   
+            if (props.picture.id === -1) {
+                await pictureStore.newPicture(pictureToEdit.value, imageFile.value);
+                emit('newPictureToFalse');
+            } else if (imageFile.value !== null) {
+                pictureStore.newPicture(pictureToEdit.value, imageFile.value);
+            } else {
+                pictureStore.editPicture(pictureToEdit.value);
+            }
         }
+    }
+
+    function removePicture() {
+        pictureStore.removePicture(pictureToEdit.value);
     }
 
     function clonePictureToEdit() {
@@ -30,14 +41,17 @@
         picture.shotTime = picture.shotTime.slice(0,19);
         return picture;
     }
+
+    function cancelButtonClick() {
+        emit('newPictureToFalse');
+    }
 </script>
 
 <template>
     <div :class="$style.container">
         <div :class="$style.pictureCard">
             <div :class="$style.leftPictureCard">
-                <!--<input type="file"/>-->
-                <base-image-input v-model="imageFile"/>
+                <base-image-input v-model="imageFile" :imageName="pictureToEdit.imageName"/>
             </div>
             <div :class="$style.middlePictureCard">
                 <textarea 
@@ -99,16 +113,35 @@
                 type="submit"
                 @click="editPicture()"
             >
+            <div v-if="picture.id === -1">
+                Create
+            </div>
+            <div v-else>
                 Save
+            </div>
             </button>
-            <button 
-                :class="{
-                    [$style.pictureCardBtn]: true,
-                    [$style.pictureCardDeleteBtn]: true,
-                }"
-            >
-                Delete
-            </button>
+            <div v-if="picture.id === -1">
+                <button 
+                    :class="{
+                        [$style.pictureCardBtn]: true,
+                        [$style.pictureCardDeleteBtn]: true,
+                    }"
+                    @click="cancelButtonClick()"
+                >
+                    Cancel
+                </button>
+            </div>
+            <div v-else>
+                <button 
+                    :class="{
+                        [$style.pictureCardBtn]: true,
+                        [$style.pictureCardDeleteBtn]: true,
+                    }"
+                    @click="removePicture()"
+                >
+                    Delete
+                </button>
+            </div>
         </div>
     </div>
 </template>

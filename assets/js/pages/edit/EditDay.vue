@@ -1,17 +1,31 @@
 <script setup lang="ts">
     import { ref, watch, type Ref } from 'vue';
-    import type { TripDay } from '@/js/types/types';
+    import type { Picture, TripDay } from '@/js/types/types';
     import { useDayStore } from '@/js/stores/DayStore';
     import { usePictureStore } from '@/js/stores/PictureStore';
     import { cloneDay } from '@/js/services/day.service';
     import EditPictureCard from '@/js/components/edit/EditPictureCard.vue';
+    import newPictureIcon from '@/icons/new_picture_icon.svg';
+    import newPictureHoverIcon from '@/icons/new_picture_hover_icon.svg';
 
     const dayStore = useDayStore();
     const pictureStore = usePictureStore();
 
     const dayToEdit: Ref<TripDay> = ref(cloneCurrentDay());
     const loading: Ref<Boolean> = ref(true);
-
+    const newPicture: Ref<Boolean> = ref(false);
+    const hover: Ref<Boolean> = ref(false);
+    const emptyPicture: Ref<Picture> = ref({
+        id: -1,
+        name: '',
+        shotTime: '',
+        lat: '',
+        lng: '',
+        imageName: '',
+        tripDay: '/api/trip_days/' + dayStore.getCurrentDay.value.id,
+        extras: []
+    });
+    
     browsePictures();
 
     function browsePictures() {
@@ -64,16 +78,40 @@
                 Save
             </button>
         </div>
-        <div :class="$style.picturesContainer">
-            <div
-                :class="$style.titles"
-                v-if="loading === false"
+        <div
+            :class="$style.picturesContainer"
+            v-if="loading === false"
+        >
+            <div :class="$style.titles">
+                Pictures ({{ pictureStore.getPictures.value.length }}): 
+            </div>       
+            <EditPictureCard 
+                v-for="picture in pictureStore.getPictures.value"
+                :key="picture.id"
+                :index="picture.shotTime"
+                :picture="picture"
+            />
+            <EditPictureCard v-if="newPicture === true" :picture="emptyPicture" @new-picture-to-false="newPicture = false"/>
+            <div 
+                :class="$style.newPictureContainer"
+                v-if="newPicture === false"
             >
-                Pictures: 
-            </div>
-            <div v-for="picture in pictureStore.getPictures.value">
-                <EditPictureCard :picture="picture"/>
-            </div>
+                <div
+                    :class="$style.newPictureButton"
+                    @click="newPicture = true"
+                    @mouseover="hover = true"
+                    @mouseleave="hover = false"
+                >
+                    <div v-if="hover === false">
+                        <newPictureIcon />
+                    </div>
+                    <div v-if="hover === true">
+                        <newPictureHoverIcon />
+                    </div>
+                </div>
+                <div :class="$style.newPictureShadowButtons"></div>
+            </div>  
+            
         </div>
     </div>
 </template>
@@ -83,7 +121,7 @@
         display: grid;
         grid-template-columns: auto;
         gap: 50px;
-        margin: 45px 20% 0 20%;
+        margin: 45px 20% 45px 20%;
         box-sizing: border-box;
     }
     .titles {
@@ -156,5 +194,20 @@
         display: grid;
         grid-template-columns: 1fr;
         gap: 30px;
+    }
+    .newPictureContainer {
+        display: grid;
+        grid-template-columns: auto auto;
+        justify-items: center;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+    }
+    .newPictureButton {
+        cursor: pointer;
+    }
+    .newPictureShadowButtons {
+        height: 100px;
+        width: 100px;
     }
 </style>

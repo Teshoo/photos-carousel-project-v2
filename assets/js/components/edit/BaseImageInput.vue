@@ -3,12 +3,21 @@
 
     const model = defineModel();
     const emit = defineEmits(['input']);
+    const props = defineProps({ imageName: { type: String, required: false } });
     const fileInput = useTemplateRef('fileInput');
-    const imageData: Ref<any> = ref(null);
+    const imageData: Ref<any> = ref(initImageDate());
 
     function chooseImage() {
         if (fileInput.value !== null) {
             fileInput.value.click();
+        }
+    }
+
+    function initImageDate() {
+        if(props.imageName) {
+            return '/images/pictures/' + props.imageName;
+        } else {
+            return null;
         }
     }
 

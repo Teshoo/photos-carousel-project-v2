@@ -84,6 +84,7 @@ interface Picture {
     shotTime: string,
     lat: string,
     lng: string,
+    imageName: string,
     tripDay: string,
     extras: Array<string>
 }
