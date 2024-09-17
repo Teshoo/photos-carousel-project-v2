@@ -1,9 +1,10 @@
 <script setup lang="ts">
-    import { computed, ref, type Ref } from 'vue';
+    import { computed, ref, type ComputedRef, type Ref } from 'vue';
     import type { Picture } from '@/js/types/types';
     import { usePictureStore } from '@/js/stores/PictureStore';
     import { clonePicture } from '@/js/services/picture.service';
-    import BaseImageInput from '@/js/components/edit/BaseImageInput.vue';
+    import BaseImageInput from '@/js/components/edit/pictureComponents/BaseImageInput.vue';
+    import PictureMapInput from '@/js/components/edit/pictureComponents/PictureMapInput.vue';
 
     const pictureStore = usePictureStore();
 
@@ -11,17 +12,44 @@
     const emit = defineEmits<{ (e: 'newPictureToFalse'): void }>()
 
     const pictureToEdit: Ref<Picture> = ref(clonePictureToEdit());
-    const googleMapUrl: String = 'https://google.com/maps';
     const imageFile: Ref<any> = ref(null);
+    const isMapVisible: Ref<Boolean> = ref(true);
 
-    const pictureModified = computed(
+    const googleMapUrl: ComputedRef<string> = computed(() => 'https://google.com/maps/@' + pictureToEdit.value.lat + ',+' + pictureToEdit.value.lng + ',18z');
+    const isPictureModified = computed(
         () =>   JSON.stringify(props.picture) !== JSON.stringify(pictureToEdit.value)
                 || imageFile.value !== null
     );
+
+    initNewPictureLatLng();
+
+    function cancelNewPicture() {
+        emit('newPictureToFalse');
+    }
+
+    function resetPictureCard() {
+        pictureToEdit.value = clonePictureToEdit();
+    }
+
+    function initNewPictureLatLng() {
+        const lastPicture: any = pictureStore.getPictures.value.findLast((element) => element);
+        if ( lastPicture !== undefined && pictureToEdit.value.id === -1) {
+            const picture: Picture = lastPicture;
+            pictureToEdit.value.lat = picture.lat;
+            pictureToEdit.value.lng = picture.lng;
+        }
+    }
+
+    function clonePictureToEdit() {
+        const picture: Picture = clonePicture(props.picture);
+        picture.shotTime = picture.shotTime.slice(0,19);
+        return picture;
+    }
     
     async function editPicture() {
-        if (pictureModified) {   
+        if (isPictureModified) {   
             if (props.picture.id === -1) {
+                isMapVisible.value = false;
                 await pictureStore.newPicture(pictureToEdit.value, imageFile.value);
                 emit('newPictureToFalse');
             } else if (imageFile.value !== null) {
@@ -35,23 +63,16 @@
     function removePicture() {
         pictureStore.removePicture(pictureToEdit.value);
     }
-
-    function clonePictureToEdit() {
-        const picture: Picture = clonePicture(props.picture);
-        picture.shotTime = picture.shotTime.slice(0,19);
-        return picture;
-    }
-
-    function cancelButtonClick() {
-        emit('newPictureToFalse');
-    }
 </script>
 
 <template>
     <div :class="$style.container">
         <div :class="$style.pictureCard">
             <div :class="$style.leftPictureCard">
-                <base-image-input v-model="imageFile" :imageName="pictureToEdit.imageName"/>
+                <base-image-input 
+                    v-model="imageFile"
+                    :imageName="pictureToEdit.imageName"
+                />
             </div>
             <div :class="$style.middlePictureCard">
                 <textarea 
@@ -91,7 +112,10 @@
                             v-model="pictureToEdit.lng"
                         />
                     </div>
-                    <a :url="googleMapUrl">
+                    <a 
+                        :href="googleMapUrl"
+                        target="_blank"
+                    >
                         <button
                             :class="$style.googleMapBtn"
                             type="button"
@@ -100,33 +124,48 @@
                         </button>
                     </a>
                 </div>
-                <div :class="$style.mapContainer"></div>
+                <PictureMapInput v-if="isMapVisible"
+                    :class="$style.mapContainer"
+                    :pictureToEdit="pictureToEdit"
+                    v-model:lat="pictureToEdit.lat"
+                    v-model:lng="pictureToEdit.lng"
+                />
             </div>
         </div>
         <div :class="$style.buttonsContainer">
             <button
                 :class="{
                     [$style.pictureCardBtn]: true,
-                    [$style.pictureCardSaveBtnActive]: pictureModified, 
-                    [$style.pictureCardSaveBtnInactive]: !pictureModified,
+                    [$style.pictureCardSaveBtnActive]: isPictureModified, 
+                    [$style.pictureCardSaveBtnInactive]: !isPictureModified,
                 }"
                 type="submit"
                 @click="editPicture()"
             >
-            <div v-if="picture.id === -1">
-                Create
-            </div>
-            <div v-else>
-                Save
-            </div>
+                <div v-if="picture.id === -1">
+                    Create
+                </div>
+                <div v-else>
+                    Save
+                </div>
+            </button>
+            <button v-if="picture.id !== -1"
+                :class="{
+                    [$style.pictureCardBtn]: true,
+                    [$style.pictureCardResetBtnActive]: isPictureModified, 
+                    [$style.pictureCardResetBtnInactive]: !isPictureModified,
+                }"
+                @click="resetPictureCard()"
+            >
+                Reset
             </button>
             <div v-if="picture.id === -1">
                 <button 
                     :class="{
                         [$style.pictureCardBtn]: true,
-                        [$style.pictureCardDeleteBtn]: true,
+                        [$style.pictureCardResetBtnActive]: true,
                     }"
-                    @click="cancelButtonClick()"
+                    @click="cancelNewPicture()"
                 >
                     Cancel
                 </button>
@@ -288,6 +327,16 @@
     }
     .pictureCardSaveBtnInactive {
         background: rgba(124, 122, 234, 0.5);
+        color: rgba(255, 255, 255, 0.5);
+    }
+    .pictureCardResetBtnActive {
+        background: #e49c53;
+        color: #FFFF;
+        box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+        cursor: pointer;
+    }
+    .pictureCardResetBtnInactive {
+        background: rgb(228, 156, 83, 0.5);
         color: rgba(255, 255, 255, 0.5);
     }
     .pictureCardDeleteBtn {

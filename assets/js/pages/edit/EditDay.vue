@@ -12,9 +12,9 @@
     const pictureStore = usePictureStore();
 
     const dayToEdit: Ref<TripDay> = ref(cloneCurrentDay());
-    const loading: Ref<Boolean> = ref(true);
-    const newPicture: Ref<Boolean> = ref(false);
-    const hover: Ref<Boolean> = ref(false);
+    const isLoading: Ref<Boolean> = ref(true);
+    const isNewPicture: Ref<Boolean> = ref(false);
+    const isHovering: Ref<Boolean> = ref(false);
     const emptyPicture: Ref<Picture> = ref({
         id: -1,
         name: '',
@@ -29,7 +29,7 @@
     browsePictures();
 
     function browsePictures() {
-        pictureStore.browsePictures().then(() => loading.value = false);
+        pictureStore.browsePictures().then(() => isLoading.value = false);
     }
 
     function cloneCurrentDay() {
@@ -53,9 +53,8 @@
 
 <template>
     <div :class="$style.container">
-        <div 
+        <div v-if="dayStore.currentDay"
             :class="$style.dayEdit"
-            v-if="dayStore.currentDay"
         >
             <div :class="$style.titles">
                 Day:
@@ -78,34 +77,36 @@
                 Save
             </button>
         </div>
-        <div
+        <div v-if="isLoading === false"
             :class="$style.picturesContainer"
-            v-if="loading === false"
+            
         >
             <div :class="$style.titles">
-                Pictures ({{ pictureStore.getPictures.value.length }}): 
+                Pictures ({{ pictureStore.getPictures.value.length }})
             </div>       
-            <EditPictureCard 
-                v-for="picture in pictureStore.getPictures.value"
+            <EditPictureCard v-for="picture in pictureStore.getPictures.value"
                 :key="picture.id"
                 :index="picture.shotTime"
                 :picture="picture"
             />
-            <EditPictureCard v-if="newPicture === true" :picture="emptyPicture" @new-picture-to-false="newPicture = false"/>
-            <div 
+            <EditPictureCard v-if="isNewPicture === true" 
+                :key="emptyPicture.id"
+                :picture="emptyPicture" 
+                @new-picture-to-false="isNewPicture = false"
+            />
+            <div v-if="isNewPicture === false"
                 :class="$style.newPictureContainer"
-                v-if="newPicture === false"
             >
                 <div
                     :class="$style.newPictureButton"
-                    @click="newPicture = true"
-                    @mouseover="hover = true"
-                    @mouseleave="hover = false"
+                    @click="isNewPicture = true"
+                    @mouseover="isHovering = true"
+                    @mouseleave="isHovering = false"
                 >
-                    <div v-if="hover === false">
+                    <div v-if="isHovering === false">
                         <newPictureIcon />
                     </div>
-                    <div v-if="hover === true">
+                    <div v-if="isHovering === true">
                         <newPictureHoverIcon />
                     </div>
                 </div>

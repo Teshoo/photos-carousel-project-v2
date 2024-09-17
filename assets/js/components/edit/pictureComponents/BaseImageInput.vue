@@ -5,6 +5,7 @@
     const emit = defineEmits(['input']);
     const props = defineProps({ imageName: { type: String, required: false } });
     const fileInput = useTemplateRef('fileInput');
+    
     const imageData: Ref<any> = ref(initImageDate());
 
     function chooseImage() {
@@ -43,9 +44,8 @@
         :style="{ backgroundImage: `url(${imageData})` }"
         @click="chooseImage()"
     >
-        <span 
+        <span v-if="!imageData"
             :class="$style.placeholder"
-            v-if="!imageData"
         >
             Import your picture
         </span>
