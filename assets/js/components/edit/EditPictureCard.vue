@@ -5,15 +5,19 @@
     import { clonePicture } from '@/js/services/picture.service';
     import BaseImageInput from '@/js/components/edit/pictureComponents/BaseImageInput.vue';
     import PictureMapInput from '@/js/components/edit/pictureComponents/PictureMapInput.vue';
+    import ActionButton from '@/js/components/core/buttons/ActionButton.vue';
 
+    // SETUP //
     const pictureStore = usePictureStore();
 
     const props = defineProps<{ picture: Picture }>();
-    const emit = defineEmits<{ (e: 'newPictureToFalse'): void }>()
+    const emit = defineEmits<{ (e: 'newPictureToFalse'): void }>();
 
     const pictureToEdit: Ref<Picture> = ref(clonePictureToEdit());
     const imageFile: Ref<any> = ref(null);
+    const imageData: Ref<any> = ref(setImageUrl());
     const isMapVisible: Ref<Boolean> = ref(true);
+    const isNewPicture: Ref<Boolean> = ref(props.picture.id === -1);
 
     const googleMapUrl: ComputedRef<string> = computed(() => 'https://google.com/maps/@' + pictureToEdit.value.lat + ',+' + pictureToEdit.value.lng + ',18z');
     const isPictureModified = computed(
@@ -21,34 +25,43 @@
                 || imageFile.value !== null
     );
 
-    initNewPictureLatLng();
+    initNewPicture();
 
-    function cancelNewPicture() {
-        emit('newPictureToFalse');
-    }
-
-    function resetPictureCard() {
-        pictureToEdit.value = clonePictureToEdit();
-    }
-
-    function initNewPictureLatLng() {
-        const lastPicture: any = pictureStore.getPictures.value.findLast((element) => element);
-        if ( lastPicture !== undefined && pictureToEdit.value.id === -1) {
+    // METHODS //
+    
+    function initNewPicture(): void {
+        const lastPicture: any = pictureStore.getPictures.value.findLast((picture) => picture);
+        if ( lastPicture !== undefined && isNewPicture.value) {
             const picture: Picture = lastPicture;
             pictureToEdit.value.lat = picture.lat;
             pictureToEdit.value.lng = picture.lng;
+            pictureToEdit.value.shotTime = picture.shotTime;
         }
     }
 
-    function clonePictureToEdit() {
+    function clonePictureToEdit(): Picture {
         const picture: Picture = clonePicture(props.picture);
         picture.shotTime = picture.shotTime.slice(0,19);
         return picture;
     }
-    
-    async function editPicture() {
+
+    function setImageUrl(): String | null {
+        return props.picture.imageName ? '/images/pictures/' + pictureToEdit.value.imageName : null;
+    }
+
+    function resetPictureCard(): void {
+        imageFile.value = null;
+        imageData.value = setImageUrl();
+        pictureToEdit.value = clonePictureToEdit();
+    }
+
+    function cancelNewPicture(): void {
+        emit('newPictureToFalse');
+    }
+
+    async function editPicture(): Promise<void> {
         if (isPictureModified) {   
-            if (props.picture.id === -1) {
+            if (isNewPicture.value) {
                 isMapVisible.value = false;
                 await pictureStore.newPicture(pictureToEdit.value, imageFile.value);
                 emit('newPictureToFalse');
@@ -60,7 +73,7 @@
         }
     }
 
-    function removePicture() {
+    function removePicture(): void {
         pictureStore.removePicture(pictureToEdit.value);
     }
 </script>
@@ -70,8 +83,8 @@
         <div :class="$style.pictureCard">
             <div :class="$style.leftPictureCard">
                 <base-image-input 
-                    v-model="imageFile"
-                    :imageName="pictureToEdit.imageName"
+                    v-model:imageFile="imageFile"
+                    v-model:imageData="imageData"
                 />
             </div>
             <div :class="$style.middlePictureCard">
@@ -133,54 +146,24 @@
             </div>
         </div>
         <div :class="$style.buttonsContainer">
-            <button
-                :class="{
-                    [$style.pictureCardBtn]: true,
-                    [$style.pictureCardSaveBtnActive]: isPictureModified, 
-                    [$style.pictureCardSaveBtnInactive]: !isPictureModified,
-                }"
+            <ActionButton  
+                :name="isNewPicture ? 'Create' : 'Save'"
+                :btnType="'save'"
+                :disabled="!isPictureModified"
                 type="submit"
                 @click="editPicture()"
-            >
-                <div v-if="picture.id === -1">
-                    Create
-                </div>
-                <div v-else>
-                    Save
-                </div>
-            </button>
-            <button v-if="picture.id !== -1"
-                :class="{
-                    [$style.pictureCardBtn]: true,
-                    [$style.pictureCardResetBtnActive]: isPictureModified, 
-                    [$style.pictureCardResetBtnInactive]: !isPictureModified,
-                }"
-                @click="resetPictureCard()"
-            >
-                Reset
-            </button>
-            <div v-if="picture.id === -1">
-                <button 
-                    :class="{
-                        [$style.pictureCardBtn]: true,
-                        [$style.pictureCardResetBtnActive]: true,
-                    }"
-                    @click="cancelNewPicture()"
-                >
-                    Cancel
-                </button>
-            </div>
-            <div v-else>
-                <button 
-                    :class="{
-                        [$style.pictureCardBtn]: true,
-                        [$style.pictureCardDeleteBtn]: true,
-                    }"
-                    @click="removePicture()"
-                >
-                    Delete
-                </button>
-            </div>
+            />
+            <ActionButton
+                :name="isNewPicture ? 'Cancel' : 'Reset'"
+                :btnType="'cancel'"
+                :disabled="!isPictureModified" 
+                @click="isNewPicture ? cancelNewPicture() : resetPictureCard() "
+            />
+            <ActionButton v-if="!isNewPicture"
+                :name="'Delete'"
+                :btnType="'delete'"
+                @click="removePicture()"
+            />
         </div>
     </div>
 </template>
@@ -296,53 +279,5 @@
         gap: 10px;
 
         width: 100px;
-    }
-    .pictureCardBtn {
-        display: grid;
-        grid-template-columns: 1fr;
-        align-items: center;
-        justify-items: center;
-        gap: 10px;
-
-        width: 100px;
-        height: 35px;
-
-        border: none;
-        border-radius: 20px;
-        
-        box-sizing: border-box;
-
-        font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-        font-style: normal;
-        font-weight: 700;
-        font-size: 20px;
-        line-height: 19px;
-        letter-spacing: 0.1em;
-    }
-    .pictureCardSaveBtnActive {
-        background: #7C7AEA;
-        color: #FFFFFF;
-        box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-        cursor: pointer;
-    }
-    .pictureCardSaveBtnInactive {
-        background: rgba(124, 122, 234, 0.5);
-        color: rgba(255, 255, 255, 0.5);
-    }
-    .pictureCardResetBtnActive {
-        background: #e49c53;
-        color: #FFFF;
-        box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-        cursor: pointer;
-    }
-    .pictureCardResetBtnInactive {
-        background: rgb(228, 156, 83, 0.5);
-        color: rgba(255, 255, 255, 0.5);
-    }
-    .pictureCardDeleteBtn {
-        background: #EC6666;
-        color: #FFFFFF;
-        box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-        cursor: pointer;
     }
 </style>

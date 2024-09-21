@@ -66,6 +66,7 @@
 <template>
     <main>
     <l-map ref="map"
+        :style="{ borderRadius: '10px' }"
         v-model:zoom="zoom"
         v-model:center="pictureCenter"
         :useGlobalLeaflet="false"

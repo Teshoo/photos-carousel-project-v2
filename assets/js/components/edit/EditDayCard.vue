@@ -12,17 +12,17 @@
 
     const dayToEdit: Ref<TripDay> = ref(cloneDayToEdit());
 
-    function editDay() {
+    function editDay(): void {
         if (props.day.name !== dayToEdit.value.name) {
             dayStore.editDay(dayToEdit.value);
         }
     }
 
-    function cloneDayToEdit() {
+    function cloneDayToEdit(): TripDay {
         return cloneDay(props.day);
     }
 
-    async function changeCurrentDay() {
+    async function changeCurrentDay(): Promise<void> {
         await dayStore.browseCurrentDay(props.day.id);
         router.push({ name: 'editDay', params: { dayId: dayStore.getCurrentDay.value.id } });
     }
@@ -35,7 +35,7 @@
             :class="$style.dayNameInput"
             type="text"
             placeholder="day name"
-            v-model="day.name"
+            v-model="dayToEdit.name"
         />
     </div>
     <button

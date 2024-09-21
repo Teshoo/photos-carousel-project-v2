@@ -1,28 +1,17 @@
 <script setup lang="ts">
-    import { ref, useTemplateRef, type Ref } from 'vue';
+    import { useTemplateRef } from 'vue';
 
-    const model = defineModel();
-    const emit = defineEmits(['input']);
-    const props = defineProps({ imageName: { type: String, required: false } });
+    const imageFile = defineModel('imageFile');
+    const imageData = defineModel('imageData');
     const fileInput = useTemplateRef('fileInput');
-    
-    const imageData: Ref<any> = ref(initImageDate());
-
-    function chooseImage() {
+   
+    function chooseImage(): void {
         if (fileInput.value !== null) {
             fileInput.value.click();
         }
     }
 
-    function initImageDate() {
-        if(props.imageName) {
-            return '/images/pictures/' + props.imageName;
-        } else {
-            return null;
-        }
-    }
-
-    function onSelectFile() {
+    function onSelectFile(): void {
         if (fileInput.value !== null) {
             const files: FileList | null = fileInput.value.files;
             if (files && files[0]) {
@@ -31,8 +20,7 @@
                     imageData.value = e.target?.result;
                 }
                 reader.readAsDataURL(files[0]);
-                emit('input', files[0]);
-                model.value = files[0]; 
+                imageFile.value = files[0]; 
             }
         }
     }
