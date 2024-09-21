@@ -39,7 +39,12 @@ function updateDayAPI(day: TripDay): Promise<any> {
     if (day) {
         params.tripDay = day;
     }
-    return axios.put('/api/trip_days/' + day.id, params.tripDay);
+    const config = {
+        headers: {
+            'content-type': 'application/ld+json'
+        }
+    }
+    return axios.put('/api/trip_days/' + day.id, params.tripDay, config);
 }
 
 ///////////////////////

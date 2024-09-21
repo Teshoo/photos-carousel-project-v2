@@ -26,6 +26,7 @@ function fetchTripAPI(tripId: number): Promise<any> {
 }
 
 /**
+ * @param {string} tripName
  * @returns {Promise}
  */
 function createTripAPI(tripName: string): Promise<any> {
@@ -33,7 +34,12 @@ function createTripAPI(tripName: string): Promise<any> {
     params.name = tripName;
     params.tripStages = [];
     params.extras = [];
-    return axios.post('/api/trips', params);
+    const config = {
+        headers: {
+            'content-type': 'application/ld+json'
+        }
+    }
+    return axios.post('/api/trips', params, config);
 }
 
 /**
@@ -45,7 +51,12 @@ function updateTripAPI(trip: Trip): Promise<any> {
     if (trip) {
         params.trip = trip;
     }
-    return axios.put('/api/trips/' + trip.id, params.trip);
+    const config = {
+        headers: {
+            'content-type': 'application/ld+json'
+        }
+    }
+    return axios.put('/api/trips/' + trip.id, params.trip, config);
 }
 
 ///////////////////////

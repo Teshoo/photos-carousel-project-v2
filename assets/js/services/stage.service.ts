@@ -39,7 +39,12 @@ function updateStageAPI(stage: TripStage): Promise<any> {
     if (stage) {
         params.tripStage = stage;
     }
-    return axios.put('/api/trip_stages/' + stage.id, params.tripStage);
+    const config = {
+        headers: {
+            'content-type': 'application/ld+json'
+        }
+    }
+    return axios.put('/api/trip_stages/' + stage.id, params.tripStage, config);
 }
 
 ///////////////////////
