@@ -26,14 +26,14 @@ function fetchTripAPI(tripId: number): Promise<any> {
 }
 
 /**
- * @param {string} tripName
+ * @param {string} tripToCreate
  * @returns {Promise}
  */
-function createTripAPI(tripName: string): Promise<any> {
+function createTripAPI(tripToCreate: Trip): Promise<any> {
     const params: {[index: string]:any}= {};
-    params.name = tripName;
-    params.tripStages = [];
-    params.extras = [];
+    params.name = tripToCreate.name;
+    params.tripStages = tripToCreate.tripStages;
+    params.extras = tripToCreate.extras;
     const config = {
         headers: {
             'content-type': 'application/ld+json'
@@ -57,6 +57,14 @@ function updateTripAPI(trip: Trip): Promise<any> {
         }
     }
     return axios.put('/api/trips/' + trip.id, params.trip, config);
+}
+
+/**
+ * @param {number|null} tripId
+ * @returns {Promise}
+ */
+function deleteTripAPI(tripAPI: number): Promise<any> {
+    return axios.delete('/api/trips/' + tripAPI);
 }
 
 ///////////////////////
@@ -91,11 +99,12 @@ export async function fetchTrip(tripId: number): Promise<any> {
 }
 
 /**
+ * @param {Trip} tripToCreate
  * @returns {Promise}
  */
-export async function createTrip(tripName: string): Promise<any> {
+export async function createTrip(tripToCreate: Trip): Promise<any> {
     try {
-        const response = await createTripAPI(tripName);
+        const response = await createTripAPI(tripToCreate);
         const trip: Trip = tripAPIToTrip(response.data);
         return trip;
     } catch (error) {
@@ -114,6 +123,18 @@ export async function updateTrip(tripToUpdate: Trip): Promise<any> {
         return trip;
     } catch (error) {
         console.log('Could not update trip: ' + error);
+    }
+}
+
+/**
+ * @param {Trip} tripToDelete
+ * @returns {Promise}
+ */
+export async function deleteTrip(tripToDelete: Trip): Promise<any> {
+    try {
+        await deleteTripAPI(tripToDelete.id);
+    } catch (error) {
+        console.log('Could not delete trip: ' + error);
     }
 }
 

@@ -31,6 +31,23 @@ function fetchDayAPI(tripDayId: number): Promise<any> {
 }
 
 /**
+ * @param {TripDay} dayToCreate
+ * @returns {Promise}
+ */
+function createDayAPI(dayToCreate: TripDay): Promise<any> {
+    const params: {[index: string]:any}= {};
+    params.name = dayToCreate.name;
+    params.date = dayToCreate.date;
+    params.tripStage = dayToCreate.tripStage;
+    const config = {
+        headers: {
+            'content-type': 'application/ld+json'
+        }
+    }
+    return axios.post('/api/trip_days', params, config );
+}
+
+/**
  * @param {TripDay|null} day
  * @returns {Promise}
  */
@@ -45,6 +62,14 @@ function updateDayAPI(day: TripDay): Promise<any> {
         }
     }
     return axios.put('/api/trip_days/' + day.id, params.tripDay, config);
+}
+
+/**
+ * @param {number|null} dayId
+ * @returns {Promise}
+ */
+function deleteDayAPI(dayId: number): Promise<any> {
+    return axios.delete('/api/trip_days/' + dayId);
 }
 
 ///////////////////////
@@ -80,6 +105,20 @@ export async function fetchDay(dayId: number): Promise<any> {
 }
 
 /**
+ * @param {TripDay} dayToCreate
+ * @returns {Promise}
+ */
+export async function createDay(dayToCreate: TripDay): Promise<any> {
+    try {
+        const response = await createDayAPI(dayToCreate);
+        const day: TripDay = dayAPIToDay(response.data);
+        return day;
+    } catch (error) {
+        console.log('Could not create day: '+ error);
+    }
+}
+
+/**
  * @param {TripDay} dayToUpdate
  * @returns {Promise}
  */
@@ -89,7 +128,19 @@ export async function updateDay(dayToUpdate: TripDay): Promise<any> {
         const day: TripDay = dayAPIToDay(response.data);
         return day;
     } catch (error) {
-        console.log('Could not update day: '+ error);
+        console.log('Could not update day: ' + error);
+    }
+}
+
+/**
+ * @param {TripDay} dayToDelete
+ * @returns {Promise}
+ */
+export async function deleteDay(dayToDelete: TripDay): Promise<any> {
+    try {
+        await deleteDayAPI(dayToDelete.id);
+    } catch (error) {
+        console.log('Could not delete day: ' + error);
     }
 }
 
@@ -101,7 +152,7 @@ function dayAPIToDay(dayAPI: TripDayAPI): TripDay {
     return {
         id: dayAPI.id,
         name: dayAPI.name,
-        date: dayAPI.date,
+        date: dayAPI.date.slice(0,10),
         startHideout: dayAPI.startHideout,
         endHideout: dayAPI.endHideout,
         tripStage: dayAPI.tripStage,

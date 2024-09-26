@@ -4,12 +4,12 @@ import { computed, ref, type Ref } from 'vue';
 import { defineStore } from 'pinia';
 import type { TripStage } from '@/js/types/types';
 import { useTripStore } from '@/js/stores/TripStore';
-import { fetchStages, fetchStage, updateStage } from '@/js/services/stage.service';
+import { fetchStages, fetchStage, createStage, updateStage, deleteStage } from '@/js/services/stage.service';
 
 export const useStageStore = defineStore('Stage', () => {
     const tripStore = useTripStore();
 
-    // STATES
+    // STATE
     const stages: Ref<TripStage[]> = ref([]);
     const currentStage: Ref<TripStage> = ref({
         id: -1,
@@ -21,8 +21,8 @@ export const useStageStore = defineStore('Stage', () => {
     });
 
     // GETTERS
-    const getStages = computed(() => stages);
-    const getCurrentStage = computed(() => currentStage);
+    const getStages = computed<Ref<TripStage[]>>(() => stages);
+    const getCurrentStage = computed<Ref<TripStage>>(() => currentStage);
 
     // ACTIONS
     async function browseStages() {
@@ -35,6 +35,10 @@ export const useStageStore = defineStore('Stage', () => {
         }
     }
 
+    async function newStage(stage: TripStage) {
+        await createStage(stage).then(browseStages);
+    }
+
     async function editStage(stage: TripStage) {
         await updateStage(stage).then(browseStages);
     }
@@ -44,5 +48,9 @@ export const useStageStore = defineStore('Stage', () => {
         browseStages();
     }
 
-    return { stages, currentStage, getStages, getCurrentStage, browseStages, browseCurrentStage, editStage, updateCurrentStage }
+    async function removeStage(stage: TripStage): Promise<void> {
+        await deleteStage(stage).then(browseStages);
+    }
+
+    return { stages, currentStage, getStages, getCurrentStage, browseStages, browseCurrentStage, newStage, editStage, updateCurrentStage, removeStage }
 });

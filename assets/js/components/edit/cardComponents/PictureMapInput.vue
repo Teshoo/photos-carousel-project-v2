@@ -10,16 +10,16 @@
 
     const pictureStore = usePictureStore();
     const props = defineProps<{ pictureToEdit: Picture }>();
-    const pictureLat = defineModel('lat');
-    const pictureLng = defineModel('lng');
-    const marker = useTemplateRef('marker');
+    const pictureLat = defineModel<string>('lat', { required: true });
+    const pictureLng = defineModel<string>('lng', { required: true });
+    const marker = useTemplateRef<any>('marker');
 
     const lastPictureIndex: Ref<number> = ref(pictureStore.getPictures.value.findLastIndex((element) => element));
     
     // MAP ATTRIBUTES //
 
     const zoom: Ref<number> = ref(18);
-    const pictureCenter: Ref<[any, any]> = ref([pictureLat.value, pictureLng.value]);
+    const pictureCenter: Ref<[string, string]> = ref([pictureLat.value, pictureLng.value]);
     const iconSize: Ref<[number, number]> = ref([15, 15]);
     const polylineColor: Ref<string> = ref('#FF5470');
     const polylineDashArray: Ref<string> = ref('1 4');
@@ -27,19 +27,19 @@
 
     // BOOLEANS //
 
-    function isPictureToEdit(picture: Picture): Boolean {
+    function isPictureToEdit(picture: Picture): boolean {
         return picture.id === props.pictureToEdit.id;
     }
-    function isFollowingPictureToEdit(index: number): Boolean {
+    function isFollowingPictureToEdit(index: number): boolean {
         return getPreviousPicture(index).id === props.pictureToEdit.id;
     }
-    function isInvolvingPictureToEdit(picture: Picture, index: number): Boolean {
+    function isInvolvingPictureToEdit(picture: Picture, index: number): boolean {
         return isPictureToEdit(picture) || isFollowingPictureToEdit(index);
     }
-    function isFirstPicture(index: number): Boolean {
+    function isFirstPicture(index: number): boolean {
         return index === 0;
     }
-    function isNewPicture(): Boolean {
+    function isNewPicture(): boolean {
         return props.pictureToEdit.id === -1;
     }
 
@@ -47,8 +47,8 @@
 
     function updatePictureLatLng(): void {
         const markerLatLng = marker.value?.leafletObject.getLatLng();
-        pictureLat.value = markerLatLng.lat;
-        pictureLng.value = markerLatLng.lng;
+        pictureLat.value = sliceCoord(markerLatLng.lat +'');
+        pictureLng.value = sliceCoord(markerLatLng.lng + '');
     }
 
     function setPolylineStart(picture: Picture, index: number): [string, string] {
@@ -62,6 +62,10 @@
     function getPreviousPicture(index: number): Picture {
         return pictureStore.getPictures.value[index-1];
     }
+
+    function sliceCoord(str: string): string {
+        return str.split('.')[0] + '.' + str.split('.')[1].slice(0, 6);
+    }
 </script>
 <template>
     <main>
@@ -69,7 +73,7 @@
         :style="{ borderRadius: '10px' }"
         v-model:zoom="zoom"
         v-model:center="pictureCenter"
-        :useGlobalLeaflet="false"
+        :use-global-leaflet="false"
     >
         <l-tile-layer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

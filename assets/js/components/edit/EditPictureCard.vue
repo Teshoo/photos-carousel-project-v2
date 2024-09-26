@@ -3,24 +3,26 @@
     import type { Picture } from '@/js/types/types';
     import { usePictureStore } from '@/js/stores/PictureStore';
     import { clonePicture } from '@/js/services/picture.service';
-    import BaseImageInput from '@/js/components/edit/pictureComponents/BaseImageInput.vue';
-    import PictureMapInput from '@/js/components/edit/pictureComponents/PictureMapInput.vue';
+    import BaseImageInput from '@/js/components/edit/cardComponents/BaseImageInput.vue';
+    import PictureMapInput from '@/js/components/edit/cardComponents/PictureMapInput.vue';
     import ActionButton from '@/js/components/core/buttons/ActionButton.vue';
 
-    // SETUP //
     const pictureStore = usePictureStore();
 
     const props = defineProps<{ picture: Picture }>();
-    const emit = defineEmits<{ (e: 'newPictureToFalse'): void }>();
+    const emit = defineEmits<{ noPictureCreating: [] }>();
 
     const pictureToEdit: Ref<Picture> = ref(clonePictureToEdit());
     const imageFile: Ref<any> = ref(null);
     const imageData: Ref<any> = ref(setImageUrl());
-    const isMapVisible: Ref<Boolean> = ref(true);
-    const isNewPicture: Ref<Boolean> = ref(props.picture.id === -1);
+    const isMapVisible: Ref<boolean> = ref(true);
+    const isNewPicture: Ref<boolean> = ref(props.picture.id === -1);
 
-    const googleMapUrl: ComputedRef<string> = computed(() => 'https://google.com/maps/@' + pictureToEdit.value.lat + ',+' + pictureToEdit.value.lng + ',18z');
-    const isPictureModified = computed(
+    const googleMapUrl = computed<string>(
+        () => 'https://google.com/maps/@' + pictureToEdit.value.lat + ',+' + pictureToEdit.value.lng + ',18z'
+    );
+
+    const isPictureModified = computed<boolean>(
         () =>   JSON.stringify(props.picture) !== JSON.stringify(pictureToEdit.value)
                 || imageFile.value !== null
     );
@@ -31,7 +33,7 @@
     
     function initNewPicture(): void {
         const lastPicture: any = pictureStore.getPictures.value.findLast((picture) => picture);
-        if ( lastPicture !== undefined && isNewPicture.value) {
+        if (lastPicture !== undefined && isNewPicture.value) {
             const picture: Picture = lastPicture;
             pictureToEdit.value.lat = picture.lat;
             pictureToEdit.value.lng = picture.lng;
@@ -40,12 +42,10 @@
     }
 
     function clonePictureToEdit(): Picture {
-        const picture: Picture = clonePicture(props.picture);
-        picture.shotTime = picture.shotTime.slice(0,19);
-        return picture;
+        return clonePicture(props.picture);
     }
 
-    function setImageUrl(): String | null {
+    function setImageUrl(): string | null {
         return props.picture.imageName ? '/images/pictures/' + pictureToEdit.value.imageName : null;
     }
 
@@ -56,17 +56,21 @@
     }
 
     function cancelNewPicture(): void {
-        emit('newPictureToFalse');
+        emit('noPictureCreating');
     }
 
-    async function editPicture(): Promise<void> {
-        if (isPictureModified) {   
-            if (isNewPicture.value) {
-                isMapVisible.value = false;
-                await pictureStore.newPicture(pictureToEdit.value, imageFile.value);
-                emit('newPictureToFalse');
-            } else if (imageFile.value !== null) {
-                pictureStore.newPicture(pictureToEdit.value, imageFile.value);
+    async function createPicture(): Promise<void> {
+        if (isNewPicture.value) {
+            isMapVisible.value = false;
+            await pictureStore.newPicture(pictureToEdit.value, imageFile.value);
+            emit('noPictureCreating');
+        }
+    }
+
+    function editPicture(): void {
+        if (isPictureModified.value) {
+            if (imageFile.value !== null) {
+                pictureStore.replacePicture(pictureToEdit.value, imageFile.value);
             } else {
                 pictureStore.editPicture(pictureToEdit.value);
             }
@@ -82,18 +86,15 @@
     <div :class="$style.container">
         <div :class="$style.pictureCard">
             <div :class="$style.leftPictureCard">
-                <base-image-input 
-                    v-model:imageFile="imageFile"
-                    v-model:imageData="imageData"
+                <BaseImageInput 
+                    v-model:image-file="imageFile"
+                    v-model:image-data="imageData"
                 />
             </div>
             <div :class="$style.middlePictureCard">
                 <textarea 
-                    :class="{
-                        [$style.pictureCardInputs]: true,
-                        [$style.pictureCardInputName]: true,
-                    }"
-                    placeholder="picture name"
+                    :class="[$style.pictureCardInputs, $style.pictureCardInputName]"
+                    placeholder="picture descripion"
                     v-model="pictureToEdit.name"
                 ></textarea>
                 <input 
@@ -107,19 +108,13 @@
                 <div :class="$style.leftPictureMap">
                     <div :class="$style.pictureCoordinates">
                         <input
-                            :class="{
-                                [$style.pictureCardInputs]: true,
-                                [$style.pictureCardInputCoord]: true,
-                            }"
+                            :class="[$style.pictureCardInputs, $style.pictureCardInputCoord]"
                             type="text"
                             placeholder="picture lat"
                             v-model="pictureToEdit.lat"
                         />
                         <input
-                            :class="{
-                                [$style.pictureCardInputs]: true,
-                                [$style.pictureCardInputCoord]: true,
-                            }"
+                            :class="[$style.pictureCardInputs, $style.pictureCardInputCoord]"
                             type="text"
                             placeholder="picture lng"
                             v-model="pictureToEdit.lng"
@@ -139,7 +134,7 @@
                 </div>
                 <PictureMapInput v-if="isMapVisible"
                     :class="$style.mapContainer"
-                    :pictureToEdit="pictureToEdit"
+                    :picture-to-edit="pictureToEdit"
                     v-model:lat="pictureToEdit.lat"
                     v-model:lng="pictureToEdit.lng"
                 />
@@ -148,20 +143,19 @@
         <div :class="$style.buttonsContainer">
             <ActionButton  
                 :name="isNewPicture ? 'Create' : 'Save'"
-                :btnType="'save'"
+                :btn-type="'save'"
                 :disabled="!isPictureModified"
-                type="submit"
-                @click="editPicture()"
+                @click="isNewPicture ? createPicture() : editPicture()"
             />
             <ActionButton
                 :name="isNewPicture ? 'Cancel' : 'Reset'"
-                :btnType="'cancel'"
-                :disabled="!isPictureModified" 
+                :btn-type="'cancel'"
+                :disabled="isNewPicture ? false : !isPictureModified" 
                 @click="isNewPicture ? cancelNewPicture() : resetPictureCard() "
             />
             <ActionButton v-if="!isNewPicture"
                 :name="'Delete'"
-                :btnType="'delete'"
+                :btn-type="'delete'"
                 @click="removePicture()"
             />
         </div>

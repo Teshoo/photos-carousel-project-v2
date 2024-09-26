@@ -1,22 +1,22 @@
 <script setup lang="ts">
-    const props = defineProps({
-        name: { type: String, required: true },
-        btnType: { type: String, default: 'default' }
-    });
+    const {btnType = 'default'} = defineProps<{
+        name: string,
+        btnType: string
+    }>();
 </script>
 
 <template>
     <button
         :class="{
             [$style.baseBtn]: true,
-            [$style.defaultBtn]: props.btnType === 'default',
-            [$style.saveBtn]: props.btnType === 'save',
-            [$style.cancelBtn]: props.btnType === 'cancel',
-            [$style.deleteBtn]: props.btnType === 'delete',
+            [$style.defaultBtn]: btnType === 'default',
+            [$style.saveBtn]: btnType === 'save',
+            [$style.cancelBtn]: btnType === 'cancel',
+            [$style.deleteBtn]: btnType === 'delete',
         }"
     >
         <div>
-            {{ props.name }}
+            {{ name }}
         </div>
     </button>
 </template>
@@ -52,7 +52,7 @@
         cursor: default;
     }
     .defaultBtn {
-        background: #7C7AEA;
+        background: #638f63;
     }
     .saveBtn {
         background: #7C7AEA;

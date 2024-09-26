@@ -2,62 +2,72 @@
     import { ref, type Ref } from 'vue';
     import type { Trip } from '@/js/types/types';
     import { useTripStore } from '@/js/stores/TripStore';
-    import { createNewTrip } from '@/js/pages/TripList.service';
     import TripCard from '@/js/components/TripCard.vue';
     import newTripIcon from '@/icons/new_trip_icon.svg';
     import newTripHoverIcon from '@/icons/new_trip_hover_icon.svg';
 
-    let trips: Ref<Trip[]>;
-    let hover: Ref<Boolean> = ref(false);
-    let loading: Ref<Boolean> = ref(true);
-    let loadingNewTrip: Ref<Boolean> = ref(false);
-
     const tripStore = useTripStore();
+
+    const isHovering: Ref<boolean> = ref(false);
+    const isLoading: Ref<boolean> = ref(true);
+    const isLoadingNewTrip: Ref<boolean> = ref(false);
+    const newTrip: Ref<Trip> = ref({
+        id: -1,
+        name: 'New Trip',
+        tripStages: [],
+        extras: []
+    });
 
     browseTrips();
 
-    async function browseTrips() {
-        await tripStore.browseTrips();
-        trips = tripStore.getTrips;
-        loading.value = false;
+    // METHODS
+    
+    function browseTrips(): void {
+        tripStore.browseTrips().then(() => isLoading.value = false);
     }
 
-    async function addNewTrip() {
-        trips.value = await createNewTrip(trips.value);
-        loadingNewTrip.value = false;
+    async function createTrip(): Promise<void> {
+        await tripStore.newTrip(newTrip.value);
+        isLoadingNewTrip.value = false;
     }
-
 </script>
 
 <template>
     <div :class="$style.container">
         <div :class="$style.title">
-            VOYAGES :
+            VOYAGES
         </div>
-        <div v-if="loading === true" :class="$style.loading">
+        <div v-if="isLoading"
+            :class="$style.loading"
+        >
             Loading...
         </div>
-        <div v-if="loading === false" :class="$style.tripCards">
-            <div
-                v-for="trip in trips"
-            >
-                <trip-card :trip="trip" :key="trip.id"/> 
+        <div v-if="!isLoading"
+            :class="$style.tripCards"
+        >
+            <div v-for="trip in tripStore.getTrips.value">
+                <trip-card
+                    :trip="trip"
+                    :key="trip.id"
+                /> 
             </div>
-            <div v-if="loadingNewTrip === true" :class="$style.newTripCard">
+            <div v-if="isLoadingNewTrip"
+                :class="$style.newTripCard"
+            >
                 <div :class="$style.loading">
                     Creating...
                 </div>
             </div>
             <div 
                 :class="$style.newTripCard"
-                @click="loadingNewTrip = true; addNewTrip()"
-                @mouseover="hover = true"
-                @mouseleave="hover = false"
+                @click="isLoadingNewTrip = true; createTrip()"
+                @mouseover="isHovering = true"
+                @mouseleave="isHovering = false"
             >
-                <div v-if="hover === false">
+                <div v-if="!isHovering">
                     <newTripIcon/>
                 </div>
-                <div v-if="hover === true">
+                <div v-if="isHovering">
                     <newTripHoverIcon/>
                 </div>
             </div>

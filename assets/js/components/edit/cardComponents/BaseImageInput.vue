@@ -1,9 +1,11 @@
 <script setup lang="ts">
     import { useTemplateRef } from 'vue';
 
-    const imageFile = defineModel('imageFile');
-    const imageData = defineModel('imageData');
-    const fileInput = useTemplateRef('fileInput');
+    const imageFile = defineModel<any>('imageFile', { required: true });
+    const imageData = defineModel<any>('imageData', { required: true });
+    const fileInput = useTemplateRef<any>('fileInput');
+
+    // METHODS //
    
     function chooseImage(): void {
         if (fileInput.value !== null) {

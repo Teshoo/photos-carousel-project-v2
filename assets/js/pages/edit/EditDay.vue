@@ -1,20 +1,24 @@
 <script setup lang="ts">
-    import { ref, watch, type Ref } from 'vue';
+    import { computed, ref, watch, type Ref } from 'vue';
     import type { Picture, TripDay } from '@/js/types/types';
+    import router from '@/js/router';
+    import { useStageStore } from '@/js/stores/StageStore';
     import { useDayStore } from '@/js/stores/DayStore';
     import { usePictureStore } from '@/js/stores/PictureStore';
     import { cloneDay } from '@/js/services/day.service';
     import EditPictureCard from '@/js/components/edit/EditPictureCard.vue';
     import newPictureIcon from '@/icons/new_picture_icon.svg';
     import newPictureHoverIcon from '@/icons/new_picture_hover_icon.svg';
+    import ActionButton from '@/js/components/core/buttons/ActionButton.vue';
 
+    const stageStore = useStageStore();
     const dayStore = useDayStore();
     const pictureStore = usePictureStore();
 
     const dayToEdit: Ref<TripDay> = ref(cloneCurrentDay());
-    const isLoading: Ref<Boolean> = ref(true);
-    const isPictureCreating: Ref<Boolean> = ref(false);
-    const isHovering: Ref<Boolean> = ref(false);
+    const isLoading: Ref<boolean> = ref(true);
+    const isPictureCreating: Ref<boolean> = ref(false);
+    const isHovering: Ref<boolean> = ref(false);
     const emptyPicture: Ref<Picture> = ref({
         id: -1,
         name: '',
@@ -25,7 +29,17 @@
         tripDay: '/api/trip_days/' + dayToEdit.value.id,
         extras: []
     });
+
+    const isDayModified = computed<boolean>(
+        () => JSON.stringify(dayStore.getCurrentDay.value) !== JSON.stringify(dayToEdit.value)
+    );
+
+    const hasPictures = computed<boolean>(
+        () => pictureStore.getPictures.value.length !== 0
+    );
     
+    // METHODS //
+
     browsePictures();
 
     function browsePictures(): void {
@@ -37,17 +51,25 @@
     }
 
     function updateCurrentDay(): void {
-        if (dayStore.getCurrentDay.value.name !== dayToEdit.value.name) {
+        if (isDayModified) {
             dayStore.updateCurrentDay(dayToEdit.value);
+        }
+    }
+
+    function deleteCurrentDay(): void {
+        if (hasPictures) {
+            dayStore.removeDay(dayToEdit.value);
+        router.push({ name: 'editStage', params: { stageId: stageStore.getCurrentStage.value.id }});
         }
     }
 
     watch(
         () => dayStore.getCurrentDay.value,
         () => { 
-            browsePictures();
-            dayToEdit.value = cloneCurrentDay();
             isPictureCreating.value = false;
+            dayToEdit.value = cloneCurrentDay();
+            emptyPicture.value.tripDay = '/api/trip_days/' + dayToEdit.value.id;
+            browsePictures();
         }
     );
 </script>
@@ -58,29 +80,39 @@
             :class="$style.dayEdit"
         >
             <div :class="$style.titles">
-                Day:
+                Day
             </div>
-            <input 
+            <div :class="$style.dayContainer">
+                <input 
                 :class="$style.dayNameInput"
                 type="text"
                 placeholder="day name"
                 v-model="dayToEdit.name" 
             />
-            <button
-                :class="{
-                    [$style.dayNameButton]: true,
-                    [$style.dayNameButtonActive]: dayToEdit.name !== dayStore.getCurrentDay.value.name, 
-                    [$style.dayNameButtonInactive]: dayToEdit.name === dayStore.getCurrentDay.value.name,
-                }"
-                type="submit"
-                @click="updateCurrentDay()"
-            >
-                Save
-            </button>
+            <input 
+                :class="$style.dayNameInput"
+                type="date"
+                placeholder="day date"
+                v-model="dayToEdit.date"
+            />
+            </div>
+            <div :class="$style.buttonsContainer">
+                <ActionButton  
+                    :name="'Save'"
+                    :btn-type="'save'"
+                    :disabled="!isDayModified"
+                    @click="updateCurrentDay()"
+                />
+                <ActionButton
+                    :name="'Delete'"
+                    :btn-type="'delete'"
+                    :disabled="hasPictures"
+                    @click="deleteCurrentDay()"
+                />
+            </div>
         </div>
         <div v-if="!isLoading"
             :class="$style.picturesContainer"
-            
         >
             <div :class="$style.titles">
                 Pictures ({{ pictureStore.getPictures.value.length }})
@@ -93,7 +125,7 @@
             <EditPictureCard v-if="isPictureCreating" 
                 :key="dayStore.currentDay.id"
                 :picture="emptyPicture" 
-                @new-picture-to-false="isPictureCreating = false"
+                @no-picture-creating="isPictureCreating = false"
             />
             <div v-if="!isPictureCreating"
                 :class="$style.newPictureContainer"
@@ -126,13 +158,10 @@
         margin: 45px 20% 45px 20%;
         box-sizing: border-box;
     }
-    .titles {
-        font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-        font-size: 24px;
-        font-weight: 700;
-        line-height: 28px;
-        letter-spacing: 0.1em;
-        color: #FFEFD5;
+    .dayContainer {
+        display: grid;
+        grid-template-columns: auto auto;
+        gap: 15px;
     }
     .dayEdit {
         display: grid;
@@ -141,10 +170,18 @@
         align-items: center;
         gap: 20px;
     }
-    .dayNameInput {
+    .titles {
         font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
         font-size: 24px;
         font-weight: 700;
+        line-height: 28px;
+        letter-spacing: 0.1em;
+        color: #FFEFD5;
+    }
+    .dayNameInput {
+        font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+        font-size: 24px;
+        font-weight: 500;
         line-height: 28px;
         color: #383838;
         
@@ -155,42 +192,18 @@
         border-radius: 10px;
         border: none;
         box-sizing: border-box;
-        padding: 10px;
+        padding: 0 10px 0 10px;
     }
     .dayNameInput:focus {
-        outline: 5px solid #7C7AEA;
+        outline: 3px solid #7C7AEA;
     }
-    .dayNameButton {
+    .buttonsContainer {
         display: grid;
-        grid-template-columns: 1fr;
-        align-items: center;
-        justify-items: center;
+        grid-template-columns: 1fr 1fr;
+        align-content: center;
         gap: 10px;
 
         width: 100px;
-        height: 35px;
-
-        border: none;
-        border-radius: 20px;
-        
-        box-sizing: border-box;
-
-        font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-        font-style: normal;
-        font-weight: 700;
-        font-size: 20px;
-        line-height: 19px;
-        letter-spacing: 0.1em;
-    }
-    .dayNameButtonActive {
-        background: #7C7AEA;
-        color: #FFFFFF;
-        box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-        cursor: pointer;
-    }
-    .dayNameButtonInactive {
-        background: rgba(124, 122, 234, 0.5);
-        color: rgba(255, 255, 255, 0.5);
     }
     .picturesContainer {
         display: grid;

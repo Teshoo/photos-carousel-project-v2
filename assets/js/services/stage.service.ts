@@ -2,7 +2,7 @@ export {}
 
 import axios from 'axios';
 import { map, of } from 'rxjs';
-import type { TripStageAPI, TripStage } from '../types/types';
+import type { TripStageAPI, TripStage, Trip } from '../types/types';
 
 ///////////////////
 // DATA FETCHING //
@@ -31,6 +31,24 @@ function fetchStageAPI(tripStageId: number): Promise<any> {
 }
 
 /**
+ * @param {TripStage} stageToCreate
+ * @returns {Promise}
+ */
+function createStageAPI(stageToCreate: TripStage): Promise<any> {
+    const params: {[index: string]:any}= {};
+    params.name = stageToCreate.name;
+    params.lat = stageToCreate.lat;
+    params.lng = stageToCreate.lng;
+    params.trip = stageToCreate.trip;
+    const config = {
+        headers: {
+            'content-type': 'application/ld+json'
+        }
+    }
+    return axios.post('/api/trip_stages', params, config );
+}
+
+/**
  * @param {TripStage|null} stage
  * @returns {Promise}
  */
@@ -45,6 +63,14 @@ function updateStageAPI(stage: TripStage): Promise<any> {
         }
     }
     return axios.put('/api/trip_stages/' + stage.id, params.tripStage, config);
+}
+
+/**
+ * @param {number|null} stageId
+ * @returns {Promise}
+ */
+function deleteStageAPI(stageId: number): Promise<any> {
+    return axios.delete('/api/trip_stages/' + stageId);
 }
 
 ///////////////////////
@@ -80,6 +106,20 @@ export async function fetchStage(stageId: number): Promise<any> {
 }
 
 /**
+ * @param {TripStage} stageToCreate
+ * @returns {Promise}
+ */
+export async function createStage(stageToCreate: TripStage): Promise<any> {
+    try {
+        const response = await createStageAPI(stageToCreate);
+        const stage: TripStage = stageAPIToStage(response.data);
+        return stage;
+    } catch (error) {
+        console.log('Could not create stage: '+ error);
+    }
+}
+
+/**
  * @param {TripStage} stageToUpdate
  * @returns {Promise}
  */
@@ -90,6 +130,18 @@ export async function updateStage(stageToUpdate: TripStage): Promise<any> {
         return stage;
     } catch (error) {
         console.log('Could not update stage: ' + error);
+    }
+}
+
+/**
+ * @param {TripStage} stageToDelete
+ * @returns {Promise}
+ */
+export async function deleteStage(stageToDelete: TripStage): Promise<any> {
+    try {
+        await deleteStageAPI(stageToDelete.id);
+    } catch (error) {
+        console.log('Could not delete stage: ' + error);
     }
 }
 

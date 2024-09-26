@@ -1,28 +1,62 @@
 <script setup lang="ts">
-    import { ref, type Ref } from 'vue';
+    import { computed, ref, type Ref } from 'vue';
     import { useRouter } from 'vue-router';
     import type { TripStage } from '@/js/types/types';
     import { useStageStore } from '@/js/stores/StageStore';
     import { cloneStage } from '@/js/services/stage.service';
+    import StageMapInput from '@/js/components/edit/cardComponents/StageMapInput.vue';
+    import ActionButton from '@/js/components/core/buttons/ActionButton.vue';
 
     const router = useRouter();
     const stageStore = useStageStore();
     
     const props = defineProps<{ stage: TripStage }>();
+    const emit = defineEmits<{ noStageCreating: [] }>();
 
     const stageToEdit: Ref<TripStage> = ref(cloneStageToEdit());
+    const isNewStage: Ref<boolean> = ref(props.stage.id === -1);
+    const isMapVisible: Ref<boolean> = ref(true);
 
-    function editStage() {
-        if (props.stage.name !== stageToEdit.value.name) {
+    const isStageModified = computed<boolean>(
+        () => JSON.stringify(props.stage) !== JSON.stringify(stageToEdit.value)
+    );
+
+    initNewStage();
+
+    // METHODS //
+
+    function initNewStage(): void {
+        const lastStage: any = stageStore.getStages.value.findLast((stage) => stage);
+        if (lastStage !== undefined && isNewStage.value) {
+            const stage: TripStage = lastStage;
+            stageToEdit.value.lat = stage.lat;
+            stageToEdit.value.lng = stage.lng;
+        }
+    }
+
+    function cancelNewStage(): void {
+        emit('noStageCreating');
+    }
+
+    async function createStage(): Promise<void> {
+        if (isNewStage) {
+            isMapVisible.value = false;
+            await stageStore.newStage(stageToEdit.value);
+            emit('noStageCreating');
+        }
+    }
+
+    function editStage(): void {
+        if (isStageModified) {
             stageStore.editStage(stageToEdit.value);
         }
     }
 
-    function cloneStageToEdit() {
+    function cloneStageToEdit(): TripStage {
         return cloneStage(props.stage);
     }
 
-    async function changeCurrentStage() {
+    async function changeCurrentStage(): Promise<void> {
         await stageStore.browseCurrentStage(props.stage.id);
         router.push({ name: 'editStage', params: { stageId: stageStore.getCurrentStage.value.id } });
     }
@@ -31,28 +65,53 @@
 <template>
     <div :class="$style.container">
         <div :class="$style.stageCard">
-        <input 
-            :class="$style.stageNameInput"
-            type="text"
-            placeholder="stage name"
-            v-model="stageToEdit.name"
-        />
-    </div>
-    <button
-        :class="{
-            [$style.stageCardSaveBtn]: true,
-            [$style.stageCardSaveBtnActive]: stageToEdit.name !== stage.name, 
-            [$style.stageCardSaveBtnInactive]: stageToEdit.name === stage.name,
-        }"
-        type="submit"
-        @click="editStage()"
-    >
-        Save
-    </button>
-    
-    <button @click="changeCurrentStage()">
-        View
-    </button>
+            <div :class="$style.stageCardLeft">
+                <input 
+                    :class="[$style.stageCardInputs, $style.stageNameInput]"
+                    type="text"
+                    placeholder="stage name"
+                    v-model="stageToEdit.name"
+                />
+                <div :class="$style.stageCoordinates">
+                    <input
+                        :class="[$style.stageCardInputs, $style.stageCardInputCoord]"
+                        type="text"
+                        placeholder="picture lat"
+                        v-model="stageToEdit.lat"
+                    />
+                    <input
+                        :class="[$style.stageCardInputs, $style.stageCardInputCoord]"
+                        type="text"
+                        placeholder="picture lng"
+                        v-model="stageToEdit.lng"
+                    />
+                </div>
+            </div>
+            <StageMapInput v-if="isMapVisible"
+                :class="$style.mapContainer"
+                :stage-to-edit="stageToEdit"
+                v-model:lat="stageToEdit.lat"
+                v-model:lng="stageToEdit.lng"
+            />
+        </div>
+        <div :class="$style.buttonsContainer">
+            <ActionButton v-if="!isNewStage"
+                :name="'View'"
+                :btn-type="'default'"
+                @click="changeCurrentStage()"
+            />
+            <ActionButton  
+                :name="isNewStage ? 'Create' : 'Save'"
+                :btn-type="'save'"
+                :disabled="!isStageModified"
+                @click="isNewStage ? createStage() : editStage()"
+            />
+            <ActionButton v-if="isNewStage"
+                :name="'Cancel'"
+                :btn-type="'cancel'"
+                @click="cancelNewStage()"
+            />
+        </div>
     </div>
 </template>
 
@@ -67,25 +126,35 @@
     }
     .stageCard {
         display: grid;
-        grid-template-columns: auto auto;
+        grid-template-columns: auto 1fr;
+        justify-items: start;
         padding: 10px;
         gap: 30px;
 
-        width: 700px;
+        width: 500px;
 
         background: #A5A4D3;
         box-shadow: 0px 4px 4px 4px rgba(0, 0, 0, 0.25);
         border-radius: 20px;
     }
-    .stageNameInput {
+    .stageCardLeft {
+        display: grid;
+        grid-template-rows: auto auto;
+        align-content: space-between;
+    }
+    .stageCoordinates {
+        display: grid;
+        grid-template-rows: auto auto;
+        justify-items: end;
+        gap: 10px;
+    }
+    .stageCardInputs {
         font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-        font-size: 18px;
-        font-weight: 700;
-        line-height: 28px;
+        font-size: 17px;
+        font-weight: 500;
         color: #383838;
         
         height: 40px;
-        width: 240px;
         background-color: #FFEFD5;
 
         border-radius: 10px;
@@ -93,39 +162,27 @@
         box-sizing: border-box;
         padding: 10px;
     }
-    .stageNameInput:focus {
+    .stageCardInputs:focus {
         outline: 1px solid #FF5470;
     }
-    .stageCardSaveBtn {
+    .stageNameInput {
+        width: 240px;
+    }
+    .stageCardInputCoord {
+        width: 150px;
+    }
+    .mapContainer {
+        background: #D9D9D9;
+        border-radius: 10px;
+        width : 100%;
+        height: 150px;
+    }
+    .buttonsContainer {
         display: grid;
-        grid-template-columns: 1fr;
-        align-items: center;
-        justify-items: center;
+        grid-template-rows: 1fr 1fr;
+        align-content: center;
         gap: 10px;
 
         width: 100px;
-        height: 35px;
-
-        border: none;
-        border-radius: 20px;
-        
-        box-sizing: border-box;
-
-        font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-        font-style: normal;
-        font-weight: 700;
-        font-size: 20px;
-        line-height: 19px;
-        letter-spacing: 0.1em;
-    }
-    .stageCardSaveBtnActive {
-        background: #7C7AEA;
-        color: #FFFFFF;
-        box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-        cursor: pointer;
-    }
-    .stageCardSaveBtnInactive {
-        background: rgba(124, 122, 234, 0.5);
-        color: rgba(255, 255, 255, 0.5);
     }
 </style>

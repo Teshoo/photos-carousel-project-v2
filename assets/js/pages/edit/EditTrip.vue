@@ -1,50 +1,85 @@
 <script setup lang="ts">
-    import { ref, watch, type Ref } from 'vue';
+    import { computed, ref, watch, type Ref } from 'vue';
+    import router from '@/js/router';
+    import type { Trip, TripStage } from '@/js/types/types';
     import { useTripStore } from '@/js/stores/TripStore';
     import { useStageStore } from '@/js/stores/StageStore';
     import EditStageCard from '@/js/components/edit/EditStageCard.vue';
     import { cloneTrip } from '@/js/services/trip.service';
-    import type { Trip } from '@/js/types/types';
+    import ActionButton from '@/js/components/core/buttons/ActionButton.vue';
+    import newStageIcon from '@/icons/new_stage_icon.svg';
+    import newStageHoverIcon from '@/icons/new_stage_hover_icon.svg';
 
     const tripStore = useTripStore();
     const stageStore = useStageStore();
 
     const tripToEdit: Ref<Trip> = ref(cloneCurrentTrip());
-    const loading: Ref<Boolean> = ref(true);
+    const isLoading: Ref<boolean> = ref(true);
+    const isHovering: Ref<boolean> = ref(false);
+    const isStageCreating:Ref<boolean>= ref(false);
+    const emptyStage: Ref<TripStage> = ref({
+        id: -1,
+        name: '',
+        lat: '',
+        lng: '',
+        trip: '/api/trips/' + tripToEdit.value.id,
+        tripDays: []
+    });
+
+    const isTripModified = computed<boolean>(
+        () => JSON.stringify(tripStore.getCurrentTrip.value) !== JSON.stringify(tripToEdit.value)
+    );
+    const hasStages = computed<boolean>(
+        () => stageStore.getStages.value.length !== 0
+    );
+
+    // METHODS //
 
     browseStages();
 
-    function browseStages() {
-        stageStore.browseStages().then(() => loading.value = false);
+    function browseStages(): void {
+        stageStore.browseStages().then(() => isLoading.value = false);
     }
 
-    function cloneCurrentTrip() {
+    function cloneCurrentTrip(): Trip {
         return cloneTrip(tripStore.getCurrentTrip.value);
     }
 
-    function updateCurrentTrip() {
+    function updateCurrentTrip(): void {
         if (tripStore.getCurrentTrip.value.name !== tripToEdit.value.name) {
             tripStore.updateCurrentTrip(tripToEdit.value);
         }
     }
 
+    function deleteCurrentTrip(): void {
+        if (!hasStages.value) {
+            tripStore.removeTrip(tripToEdit.value);
+            router.push({ name: 'tripList' });
+        }
+    }
+
+    function stagesSortedByName(): TripStage[] {
+        return stageStore.getStages.value.sort((a, b) => (a.name > b.name) ? 1 : -1);
+    }
+
     watch(
         () => tripStore.getCurrentTrip.value,
         () => { 
-            browseStages();
+            isStageCreating.value = false;
             tripToEdit.value = cloneCurrentTrip();
+            emptyStage.value.trip = '/api/trips/' + tripToEdit.value.id;
+            browseStages();
         }
     );
 </script>
 
 <template>
-    <div 
-        :class="$style.container" 
-        v-if="tripStore.getCurrentTrip"
+    <div v-if="tripStore.getCurrentTrip"
+        :class="$style.container"
     >
         <div :class="$style.tripEdit">
             <div :class="$style.titles">
-                Trip: 
+                Trip
             </div>
             <input 
                 :class="$style.tripNameInput"
@@ -52,28 +87,55 @@
                 placeholder="trip name"
                 v-model="tripToEdit.name" 
             />
-            <button
-                :class="{
-                    [$style.tripNameButton]: true,
-                    [$style.tripNameButtonActive]: tripToEdit.name !== tripStore.getCurrentTrip.value.name, 
-                    [$style.tripNameButtonInactive]: tripToEdit.name === tripStore.getCurrentTrip.value.name,
-                }"
-                type="submit"
-                @click="updateCurrentTrip()"
-            >
-                Save
-            </button>
+            <div :class="$style.buttonsContainer">
+                <ActionButton  
+                    :name="'Save'"
+                    :btn-type="'save'"
+                    :disabled="!isTripModified"
+                    @click="updateCurrentTrip()"
+                />
+                <ActionButton
+                    :name="'Delete'"
+                    :btn-type="'delete'"
+                    :disabled="hasStages"
+                    @click="deleteCurrentTrip()"
+                />
+            </div>
         </div>
-        <div :class="$style.stagesContainer">
-            <div 
-                :class="$style.titles"
-                v-if="loading === false"
+        <div v-if="isLoading === false"
+            :class="$style.stagesContainer"
+        >
+            <div :class="$style.titles">
+                Stages ({{ stageStore.getStages.value.length }}) 
+            </div>
+            <EditStageCard v-for="(stage, index) in stagesSortedByName()"
+                :key="stage.id"
+                :index="index"
+                :stage="stage"
+            />
+            <EditStageCard v-if="isStageCreating"
+                :key="tripStore.getCurrentTrip.value.id"
+                :stage="emptyStage"
+                @no-stage-creating="isStageCreating = false"
+            />
+            <div v-if="!isStageCreating"
+                :class="$style.newStageContainer"
             >
-                Stages: 
-            </div>
-            <div v-for="stage in stageStore.getStages.value">
-                <EditStageCard :stage="stage"/>
-            </div>
+                <div
+                    :class="$style.newStageButton"
+                    @click="isStageCreating = true, isHovering = false"
+                    @mouseover="isHovering = true"
+                    @mouseleave="isHovering = false"
+                >
+                    <div v-if="!isHovering">
+                        <newStageIcon />
+                    </div>
+                    <div v-if="isHovering">
+                        <newStageHoverIcon />
+                    </div>
+                </div>
+                <div :class="$style.newStageShadowButtons"></div>
+            </div> 
         </div>
     </div>
 </template>
@@ -83,7 +145,7 @@
         display: grid;
         grid-template-columns: auto;
         gap: 50px;
-        margin: 45px 20% 0 20%;
+        margin: 45px 20% 45px 20%;
         box-sizing: border-box;
     }
     .titles {
@@ -104,7 +166,7 @@
     .tripNameInput {
         font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
         font-size: 24px;
-        font-weight: 700;
+        font-weight: 500;
         line-height: 28px;
         color: #383838;
         
@@ -120,41 +182,32 @@
     .tripNameInput:focus {
         outline: 5px solid #7C7AEA;
     }
-    .tripNameButton {
+    .buttonsContainer {
         display: grid;
-        grid-template-columns: 1fr;
-        align-items: center;
-        justify-items: center;
+        grid-template-columns: 1fr 1fr;
+        align-content: center;
         gap: 10px;
 
         width: 100px;
-        height: 35px;
-
-        border: none;
-        border-radius: 20px;
-        
-        box-sizing: border-box;
-
-        font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-        font-style: normal;
-        font-weight: 700;
-        font-size: 20px;
-        line-height: 19px;
-        letter-spacing: 0.1em;
-    }
-    .tripNameButtonActive {
-        background: #7C7AEA;
-        color: #FFFFFF;
-        box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-        cursor: pointer;
-    }
-    .tripNameButtonInactive {
-        background: rgba(124, 122, 234, 0.5);
-        color: rgba(255, 255, 255, 0.5);
     }
     .stagesContainer {
         display: grid;
         grid-template-columns: 1fr;
         gap: 30px;
+    }
+    .newStageContainer {
+        display: grid;
+        grid-template-columns: auto auto;
+        justify-items: center;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+    }
+    .newStageButton {
+        cursor: pointer;
+    }
+    .newStageShadowButtons {
+        height: 100px;
+        width: 100px;
     }
 </style>

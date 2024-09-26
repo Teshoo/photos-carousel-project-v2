@@ -1,19 +1,51 @@
 <script setup lang="ts">
-    import { ref, type Ref } from 'vue';
+    import { computed, ref, type Ref } from 'vue';
     import { useRouter } from 'vue-router';
     import type { TripDay } from '@/js/types/types';
     import { useDayStore } from '@/js/stores/DayStore';
     import { cloneDay } from '@/js/services/day.service';
+    import ActionButton from '@/js/components/core/buttons/ActionButton.vue';
 
     const router = useRouter();
     const dayStore = useDayStore();
 
     const props = defineProps<{ day: TripDay }>();
+    const emit = defineEmits<{ noDayCreating: [] }>();
 
     const dayToEdit: Ref<TripDay> = ref(cloneDayToEdit());
+    const isNewDay: Ref<boolean> = ref(props.day.id === -1);
+
+    const isDayModified = computed<boolean>(
+        () => JSON.stringify(props.day) !== JSON.stringify(dayToEdit.value)
+    );
+
+    initNewDay();
+
+    // METHODS //
+
+    function initNewDay(): void {
+        const lastDay: any = dayStore.getDays.value.findLast((day) => day);
+        if (lastDay !== undefined && isNewDay.value) {
+            const day: TripDay = lastDay;
+            dayToEdit.value.date = day.date;
+            dayToEdit.value.startHideout = day.startHideout;
+            dayToEdit.value.endHideout = day.endHideout;
+        }
+    }
+
+    function cancelNewDay(): void {
+        emit('noDayCreating');
+    }
+
+    async function createDay(): Promise<void> {
+        if (isNewDay) {
+            await dayStore.newDay(dayToEdit.value);
+            emit('noDayCreating');
+        }
+    }
 
     function editDay(): void {
-        if (props.day.name !== dayToEdit.value.name) {
+        if (isDayModified) {
             dayStore.editDay(dayToEdit.value);
         }
     }
@@ -31,27 +63,53 @@
 <template>
     <div :class="$style.container">
         <div :class="$style.dayCard">
-        <input 
-            :class="$style.dayNameInput"
-            type="text"
-            placeholder="day name"
-            v-model="dayToEdit.name"
-        />
-    </div>
-    <button
-        :class="{
-            [$style.dayCardSaveBtn]: true,
-            [$style.dayCardSaveBtnActive]: dayToEdit.name !== day.name, 
-            [$style.dayCardSaveBtnInactive]: dayToEdit.name === day.name,
-        }"
-        type="submit"
-        @click="editDay()"
-    >
-        Save
-    </button>
-    <button @click="changeCurrentDay()">
-        View
-    </button>
+            <div :class="$style.dayCardLeft">
+                <input 
+                    :class="[$style.dayCardInput, $style.dayNameInput]"
+                    type="text"
+                    placeholder="day name"
+                    v-model="dayToEdit.name"
+                />
+                <input 
+                    :class="[$style.dayCardInput, $style.dayDateInput]"
+                    type="date"
+                    placeholder="day date"
+                    v-model="dayToEdit.date"
+                />
+            </div>
+            <div :class="$style.dayCardRight">
+                <select 
+                    :class="[$style.dayCardInput, $style.dayHideoutInput]"
+                    v-model="dayToEdit.startHideout"
+                    disabled
+                >
+                </select>
+                <select 
+                    :class="[$style.dayCardInput, $style.dayHideoutInput]"
+                    v-model="dayToEdit.endHideout"
+                    disabled
+                >
+                </select>
+            </div>
+        </div>
+        <div :class="$style.buttonsContainer">
+            <ActionButton v-if="!isNewDay"
+                :name="'View'"
+                :btn-type="'default'"
+                @click="changeCurrentDay()"
+            />
+            <ActionButton  
+                :name="isNewDay ? 'Create' : 'Save'"
+                :btn-type="'save'"
+                :disabled="!isDayModified"
+                @click="isNewDay ? createDay() : editDay()"
+            />
+            <ActionButton v-if="isNewDay"
+                :name="'Cancel'"
+                :btn-type="'cancel'"
+                @click="cancelNewDay()"
+            />
+        </div>
     </div>
 </template>
 
@@ -67,16 +125,26 @@
     .dayCard {
         display: grid;
         grid-template-columns: auto auto;
+        justify-content: space-between;
         padding: 10px;
-        gap: 30px;
 
-        width: 700px;
+        width: 500px;
 
         background: #A5A4D3;
         box-shadow: 0px 4px 4px 4px rgba(0, 0, 0, 0.25);
         border-radius: 20px;
     }
-    .dayNameInput {
+    .dayCardLeft {
+        display: grid;
+        grid-template-rows: auto auto;
+        gap: 20px
+    }
+    .dayCardRight {
+        display: grid;
+        grid-template-rows: auto auto;
+        gap: 20px
+    }
+    .dayCardInput {
         font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
         font-size: 18px;
         font-weight: 700;
@@ -84,7 +152,6 @@
         color: #383838;
         
         height: 40px;
-        width: 240px;
         background-color: #FFEFD5;
 
         border-radius: 10px;
@@ -92,39 +159,24 @@
         box-sizing: border-box;
         padding: 10px;
     }
-    .dayNameInput:focus {
+    .dayCardInput:focus {
         outline: 1px solid #FF5470;
     }
-    .dayCardSaveBtn {
+    .dayNameInput {
+        width: 240px;
+    }
+    .dayDateInput {
+        width: 170px;
+    }
+    .dayHideoutInput {
+        width: 170px;
+    }
+    .buttonsContainer {
         display: grid;
-        grid-template-columns: 1fr;
-        align-items: center;
-        justify-items: center;
+        grid-template-rows: 1fr 1fr;
+        align-content: center;
         gap: 10px;
 
         width: 100px;
-        height: 35px;
-
-        border: none;
-        border-radius: 20px;
-        
-        box-sizing: border-box;
-
-        font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-        font-style: normal;
-        font-weight: 700;
-        font-size: 20px;
-        line-height: 19px;
-        letter-spacing: 0.1em;
-    }
-    .dayCardSaveBtnActive {
-        background: #7C7AEA;
-        color: #FFFFFF;
-        box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
-        cursor: pointer;
-    }
-    .dayCardSaveBtnInactive {
-        background: rgba(124, 122, 234, 0.5);
-        color: rgba(255, 255, 255, 0.5);
     }
 </style>
