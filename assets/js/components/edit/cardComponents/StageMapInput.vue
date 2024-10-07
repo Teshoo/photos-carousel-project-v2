@@ -17,7 +17,7 @@
     // MAP ATTRIBUTES //
 
     const zoom: Ref<number> = ref(10);
-    const pictureCenter: Ref<[any, any]> = ref([stageLat.value, stageLng.value]);
+    const stageCenter: Ref<[any, any]> = ref([stageLat.value, stageLng.value]);
     const iconSize: Ref<[number, number]> = ref([15, 15]);
 
     // BOOLEANS //
@@ -41,40 +41,43 @@
 
 <template>
     <main>
-    <l-map ref="map"
-        :style="{ borderRadius: '10px' }"
-        v-model:zoom="zoom"
-        v-model:center="pictureCenter"
-        :use-global-leaflet="false"
-    >
-        <l-tile-layer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            layer-type="base"
-            name="OpenStreetMap"
-        />
-        <l-marker ref="marker"
-            :lat-lng="[stageLat, stageLng]"
-            :draggable="true"
-            :z-index-offset="500"
-            @dragend="updateStageLatLng()"
+        <l-map ref="map"
+            :style="{ borderRadius: '10px' }"
+            v-model:zoom="zoom"
+            v-model:center="stageCenter"
+            :use-global-leaflet="false"
+            :options="{ zoomControl: false }"
         >
-            <l-icon
-                :icon-url="currentMarkerUrl"
-                :icon-size="iconSize"
+            <l-tile-layer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                layer-type="base"
+                name="OpenStreetMap"
             />
-        </l-marker>
-        <div v-for="stage in stageStore.getStages.value"
-            :key="stage.id"
-        >
-            <l-marker v-if="!isStageToEdit(stage)" 
-                :lat-lng="[stage.lat, stage.lng]"
+
+            <l-marker ref="marker"
+                :lat-lng="[stageLat, stageLng]"
+                :draggable="true"
+                :z-index-offset="500"
+                @dragend="updateStageLatLng()"
             >
-                <l-icon v-if="stage.lat && stage.lng"
-                    :icon-url="markerUrl"
+                <l-icon
+                    :icon-url="currentMarkerUrl"
                     :icon-size="iconSize"
                 />
             </l-marker>
-        </div>
-    </l-map>
-  </main>
+            
+            <div v-for="stage in stageStore.getStages.value"
+                :key="stage.id"
+            >
+                <l-marker v-if="!isStageToEdit(stage)" 
+                    :lat-lng="[stage.lat, stage.lng]"
+                >
+                    <l-icon v-if="stage.lat && stage.lng"
+                        :icon-url="markerUrl"
+                        :icon-size="iconSize"
+                    />
+                </l-marker>
+            </div>
+        </l-map>
+    </main>
 </template>

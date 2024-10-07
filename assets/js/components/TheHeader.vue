@@ -188,7 +188,7 @@
 
         font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
         font-style: normal;
-        font-weight: 700;
+        font-weight: 500;
         font-size: 25px;
         line-height: 29px;
         color: #FFFFFF;
@@ -213,7 +213,7 @@
 
         cursor: pointer;
 
-        z-index: 1;
+        z-index: 5000;
     }
     .dropdownItem {
         display: grid;

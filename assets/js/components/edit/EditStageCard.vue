@@ -72,21 +72,24 @@
                     placeholder="stage name"
                     v-model="stageToEdit.name"
                 />
+
                 <div :class="$style.stageCoordinates">
                     <input
                         :class="[$style.stageCardInputs, $style.stageCardInputCoord]"
                         type="text"
-                        placeholder="picture lat"
+                        placeholder="stage lat"
                         v-model="stageToEdit.lat"
                     />
+
                     <input
                         :class="[$style.stageCardInputs, $style.stageCardInputCoord]"
                         type="text"
-                        placeholder="picture lng"
+                        placeholder="stage lng"
                         v-model="stageToEdit.lng"
                     />
                 </div>
             </div>
+
             <StageMapInput v-if="isMapVisible"
                 :class="$style.mapContainer"
                 :stage-to-edit="stageToEdit"
@@ -94,18 +97,21 @@
                 v-model:lng="stageToEdit.lng"
             />
         </div>
+
         <div :class="$style.buttonsContainer">
             <ActionButton v-if="!isNewStage"
                 :name="'View'"
                 :btn-type="'default'"
                 @click="changeCurrentStage()"
             />
+
             <ActionButton  
                 :name="isNewStage ? 'Create' : 'Save'"
                 :btn-type="'save'"
                 :disabled="!isStageModified"
                 @click="isNewStage ? createStage() : editStage()"
             />
+            
             <ActionButton v-if="isNewStage"
                 :name="'Cancel'"
                 :btn-type="'cancel'"
@@ -141,6 +147,8 @@
         display: grid;
         grid-template-rows: auto auto;
         align-content: space-between;
+
+        height: 150px;
     }
     .stageCoordinates {
         display: grid;

@@ -69,78 +69,85 @@
 </script>
 <template>
     <main>
-    <l-map ref="map"
-        :style="{ borderRadius: '10px' }"
-        v-model:zoom="zoom"
-        v-model:center="pictureCenter"
-        :use-global-leaflet="false"
-    >
-        <l-tile-layer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            layer-type="base"
-            name="OpenStreetMap"
-        />
-        <l-marker ref="marker"
-            :lat-lng="[pictureLat, pictureLng]"
-            :draggable="true"
-            :z-index-offset="500"
-            @dragend="updatePictureLatLng()"
+        <l-map ref="map"
+            :style="{ borderRadius: '10px' }"
+            v-model:zoom="zoom"
+            v-model:center="pictureCenter"
+            :use-global-leaflet="false"
+            :options="{ zoomControl: false }"
         >
-            <l-icon
-                :icon-url="currentMarkerUrl"
-                :icon-size="iconSize"
+            <l-tile-layer
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                layer-type="base"
+                name="OpenStreetMap"
             />
-        </l-marker>
-        <div v-for="(picture, index) in pictureStore.getPictures.value"
-            :key="picture.id"
-        >
-            <l-marker v-if="!isPictureToEdit(picture)" 
-                :lat-lng="[picture.lat, picture.lng]"
+
+            <l-marker ref="marker"
+                :lat-lng="[pictureLat, pictureLng]"
+                :draggable="true"
+                :z-index-offset="500"
+                @dragend="updatePictureLatLng()"
             >
-                <l-icon v-if="picture.lat && picture.lng"
-                    :icon-url="markerUrl"
+                <l-icon
+                    :icon-url="currentMarkerUrl"
                     :icon-size="iconSize"
                 />
             </l-marker>
-            <div v-if="!isFirstPicture(index)">
-                <l-polyline v-if="!isInvolvingPictureToEdit(picture, index)"
-                    :lat-lngs="[
-                        setPolylineStart(picture, index), 
-                        [picture.lat, picture.lng]
-                    ]"
-                    :color="polylineColor"
-                    :dash-array="polylineDashArray"
-                    :dash-offset="polylineDashOffset"
-                />
-                <l-polyline v-if="isPictureToEdit(picture)"
-                    :lat-lngs="[
-                        setPolylineStart(picture, index),
-                        [props.pictureToEdit.lat, props.pictureToEdit.lng]
-                    ]"
-                    :color="polylineColor"
-                    :dash-array="polylineDashArray"
-                    :dash-offset="polylineDashOffset"
-                />
-                <l-polyline v-if="isFollowingPictureToEdit(index)"
-                    :lat-lngs="[
-                        [props.pictureToEdit.lat, props.pictureToEdit.lng],
-                        [picture.lat, picture.lng]
-                    ]"
-                    :color="polylineColor"
-                    :dash-array="polylineDashArray"
-                    :dash-offset="polylineDashOffset"
-                />
+
+            <div v-for="(picture, index) in pictureStore.getPictures.value"
+                :key="picture.id"
+            >
+                <l-marker v-if="!isPictureToEdit(picture)" 
+                    :lat-lng="[picture.lat, picture.lng]"
+                >
+                    <l-icon v-if="picture.lat && picture.lng"
+                        :icon-url="markerUrl"
+                        :icon-size="iconSize"
+                    />
+                </l-marker>
+
+                <div v-if="!isFirstPicture(index)">
+                    <l-polyline v-if="!isInvolvingPictureToEdit(picture, index)"
+                        :lat-lngs="[
+                            setPolylineStart(picture, index), 
+                            [picture.lat, picture.lng]
+                        ]"
+                        :color="polylineColor"
+                        :dash-array="polylineDashArray"
+                        :dash-offset="polylineDashOffset"
+                    />
+
+                    <l-polyline v-if="isPictureToEdit(picture)"
+                        :lat-lngs="[
+                            setPolylineStart(picture, index),
+                            [props.pictureToEdit.lat, props.pictureToEdit.lng]
+                        ]"
+                        :color="polylineColor"
+                        :dash-array="polylineDashArray"
+                        :dash-offset="polylineDashOffset"
+                    />
+
+                    <l-polyline v-if="isFollowingPictureToEdit(index)"
+                        :lat-lngs="[
+                            [props.pictureToEdit.lat, props.pictureToEdit.lng],
+                            [picture.lat, picture.lng]
+                        ]"
+                        :color="polylineColor"
+                        :dash-array="polylineDashArray"
+                        :dash-offset="polylineDashOffset"
+                    />
+                </div>
             </div>
-        </div>
-        <l-polyline v-if="isNewPicture()"
-            :lat-lngs="[
-                setPolylineStart(pictureToEdit, lastPictureIndex + 1),
-                [props.pictureToEdit.lat, props.pictureToEdit.lng]
-            ]"
-            :color="polylineColor"
-            :dash-array="polylineDashArray"
-            :dash-offset="polylineDashOffset"
-        />
-    </l-map>
-  </main>
+            
+            <l-polyline v-if="isNewPicture()"
+                :lat-lngs="[
+                    setPolylineStart(pictureToEdit, lastPictureIndex + 1),
+                    [props.pictureToEdit.lat, props.pictureToEdit.lng]
+                ]"
+                :color="polylineColor"
+                :dash-array="polylineDashArray"
+                :dash-offset="polylineDashOffset"
+            />
+        </l-map>
+    </main>
 </template>
