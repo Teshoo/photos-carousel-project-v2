@@ -1,22 +1,30 @@
 <script setup lang="ts">
     import { computed, ref, watch, type Ref } from 'vue';
     import router from '@/js/router';
-    import type { Trip, TripStage } from '@/js/types/types';
+    import type { Hideout, Trip, TripStage } from '@/js/types/types';
     import { useTripStore } from '@/js/stores/TripStore';
     import { useStageStore } from '@/js/stores/StageStore';
+    import { useHideoutStore } from '@/js/stores/HideoutStore';
     import EditStageCard from '@/js/components/edit/EditStageCard.vue';
+    import EditHideoutCard from '@/js/components/edit/EditHideoutCard.vue';
     import { cloneTrip } from '@/js/services/trip.service';
     import ActionButton from '@/js/components/core/buttons/ActionButton.vue';
     import newStageIcon from '@/icons/new_stage_icon.svg';
     import newStageHoverIcon from '@/icons/new_stage_hover_icon.svg';
+    import newHideoutIcon from '@/icons/new_hideout_icon.svg'
+    import newHideoutHoverIcon from '@/icons/new_hideout_hover_icon.svg'
 
     const tripStore = useTripStore();
     const stageStore = useStageStore();
+    const hideoutStore = useHideoutStore();
 
     const tripToEdit: Ref<Trip> = ref(cloneCurrentTrip());
-    const isLoading: Ref<boolean> = ref(true);
-    const isHovering: Ref<boolean> = ref(false);
+    const areStagesLoading: Ref<boolean> = ref(true);
+    const areHideoutsLoading: Ref<boolean> = ref(true);
+    const isNewStageHovering: Ref<boolean> = ref(false);
+    const isNewHideoutHovering: Ref<boolean> = ref(false);
     const isStageCreating:Ref<boolean>= ref(false);
+    const isHideoutCreating:Ref<boolean>= ref(false);
     const emptyStage: Ref<TripStage> = ref({
         id: -1,
         name: '',
@@ -25,20 +33,38 @@
         trip: '/api/trips/' + tripToEdit.value.id,
         tripDays: []
     });
+    const emptyHideout: Ref<Hideout> = ref({
+        id: -1,
+        name: '',
+        lat: '',
+        lng: '',
+        trip: '/api/trips/' + tripToEdit.value.id
+    });
 
+    const isLoading = computed<boolean>(
+        () => areStagesLoading.value || areHideoutsLoading.value
+    );
     const isTripModified = computed<boolean>(
         () => JSON.stringify(tripStore.getCurrentTrip.value) !== JSON.stringify(tripToEdit.value)
     );
     const hasStages = computed<boolean>(
         () => stageStore.getStages.value.length !== 0
     );
+    const hasHideouts = computed<boolean>(
+        () => hideoutStore.getHideouts.value.length !== 0
+    );
+
+    browseStages();
+    browseHideouts();
 
     // METHODS //
 
-    browseStages();
-
     function browseStages(): void {
-        stageStore.browseStages().then(() => isLoading.value = false);
+        stageStore.browseStages().then(() => areStagesLoading.value = false);
+    }
+
+    function browseHideouts(): void {
+        hideoutStore.browseHideouts().then(() => areHideoutsLoading.value = false);
     }
 
     function cloneCurrentTrip(): Trip {
@@ -52,7 +78,7 @@
     }
 
     function deleteCurrentTrip(): void {
-        if (!hasStages.value) {
+        if (!hasStages.value && !hasHideouts.value) {
             tripStore.removeTrip(tripToEdit.value);
             router.push({ name: 'tripList' });
         }
@@ -62,6 +88,10 @@
         return stageStore.getStages.value.sort((a, b) => (a.name > b.name) ? 1 : -1);
     }
 
+    function hideoutsSortedByName(): Hideout[] {
+        return hideoutStore.getHideouts.value.sort((a, b) => (a.name > b.name) ? 1 : -1);
+    }
+
     watch(
         () => tripStore.getCurrentTrip.value,
         () => { 
@@ -69,6 +99,7 @@
             tripToEdit.value = cloneCurrentTrip();
             emptyStage.value.trip = '/api/trips/' + tripToEdit.value.id;
             browseStages();
+            browseHideouts();
         }
     );
 </script>
@@ -102,40 +133,89 @@
                 />
             </div>
         </div>
-        <div v-if="isLoading === false"
-            :class="$style.stagesContainer"
-        >
-            <div :class="$style.titles">
-                Stages ({{ stageStore.getStages.value.length }}) 
-            </div>
-            <EditStageCard v-for="(stage, index) in stagesSortedByName()"
-                :key="stage.id"
-                :index="index"
-                :stage="stage"
-            />
-            <EditStageCard v-if="isStageCreating"
-                :key="tripStore.getCurrentTrip.value.id"
-                :stage="emptyStage"
-                @no-stage-creating="isStageCreating = false"
-            />
-            <div v-if="!isStageCreating"
-                :class="$style.newStageContainer"
+
+        <div v-if="!isLoading" :class="$style.subContainer">
+            <div v-if="!areStagesLoading"
+                :class="$style.itemsContainer"
             >
-                <div
-                    :class="$style.newStageButton"
-                    @click="isStageCreating = true, isHovering = false"
-                    @mouseover="isHovering = true"
-                    @mouseleave="isHovering = false"
-                >
-                    <div v-if="!isHovering">
-                        <newStageIcon />
-                    </div>
-                    <div v-if="isHovering">
-                        <newStageHoverIcon />
-                    </div>
+                <div :class="$style.titles">
+                    Stages ({{ stageStore.getStages.value.length }}) 
                 </div>
-                <div :class="$style.newStageShadowButtons"></div>
-            </div> 
+
+                <EditStageCard v-for="(stage, index) in stagesSortedByName()"
+                    :key="stage.id"
+                    :index="index"
+                    :stage="stage"
+                />
+
+                <EditStageCard v-if="isStageCreating"
+                    :key="tripStore.getCurrentTrip.value.id"
+                    :stage="emptyStage"
+                    @no-stage-creating="isStageCreating = false"
+                />
+
+                <div v-if="!isStageCreating"
+                    :class="$style.newItemContainer"
+                >
+                    <div
+                        :class="$style.newItemButton"
+                        @click="isStageCreating = true, isNewStageHovering = false"
+                        @mouseover="isNewStageHovering = true"
+                        @mouseleave="isNewStageHovering = false"
+                    >
+                        <div v-if="!isNewStageHovering">
+                            <newStageIcon />
+                        </div>
+
+                        <div v-if="isNewStageHovering">
+                            <newStageHoverIcon />
+                        </div>
+                    </div>
+
+                    <div :class="$style.newItemShadowButtons"></div>
+                </div> 
+            </div>
+
+            <div v-if="!areHideoutsLoading"
+                :class="$style.itemsContainer"
+            >
+                <div :class="$style.titles">
+                    Hideouts ({{ hideoutStore.getHideouts.value.length }})
+                </div>
+
+                <EditHideoutCard v-for="(hideout, index) in hideoutsSortedByName()"
+                    :key="hideout.id"
+                    :index="index"
+                    :hideout="hideout"
+                />
+
+                <EditHideoutCard v-if="isHideoutCreating"
+                    :key="tripStore.getCurrentTrip.value.id"
+                    :hideout="emptyHideout"
+                    @no-hideout-creating="isHideoutCreating = false"
+                />
+
+                <div v-if="!isHideoutCreating"
+                    :class="$style.newItemContainer"
+                >
+                    <div
+                        :class="$style.newItemButton"
+                        @click="isHideoutCreating = true, isNewHideoutHovering = false"
+                        @mouseover="isNewHideoutHovering = true"
+                        @mouseleave="isNewHideoutHovering = false"
+                    >
+                        <div v-if="!isNewHideoutHovering">
+                            <newHideoutIcon />
+                        </div>
+
+                        <div v-if="isNewHideoutHovering">
+                            <newHideoutHoverIcon />
+                        </div>
+                    </div>
+
+                    <div :class="$style.newItemShadowButtons"></div>
+                </div> 
+            </div>
         </div>
     </div>
 </template>
@@ -190,12 +270,18 @@
 
         width: 100px;
     }
-    .stagesContainer {
+    .subContainer {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: start;
+        gap: 30px;
+    }
+    .itemsContainer {
         display: grid;
         grid-template-columns: 1fr;
         gap: 30px;
     }
-    .newStageContainer {
+    .newItemContainer {
         display: grid;
         grid-template-columns: auto auto;
         justify-items: center;
@@ -203,10 +289,10 @@
         align-items: center;
         gap: 20px;
     }
-    .newStageButton {
+    .newItemButton {
         cursor: pointer;
     }
-    .newStageShadowButtons {
+    .newItemShadowButtons {
         height: 100px;
         width: 100px;
     }

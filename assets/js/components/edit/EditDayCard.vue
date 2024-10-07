@@ -2,12 +2,16 @@
     import { computed, ref, type Ref } from 'vue';
     import { useRouter } from 'vue-router';
     import type { TripDay } from '@/js/types/types';
+    import { useTripStore } from '@/js/stores/TripStore';
     import { useDayStore } from '@/js/stores/DayStore';
+    import { useHideoutStore } from '@/js/stores/HideoutStore';
     import { cloneDay } from '@/js/services/day.service';
     import ActionButton from '@/js/components/core/buttons/ActionButton.vue';
 
     const router = useRouter();
+    const tripStore = useTripStore();
     const dayStore = useDayStore();
+    const hideoutStore = useHideoutStore();
 
     const props = defineProps<{ day: TripDay }>();
     const emit = defineEmits<{ noDayCreating: [] }>();
@@ -70,6 +74,7 @@
                     placeholder="day name"
                     v-model="dayToEdit.name"
                 />
+
                 <input 
                     :class="[$style.dayCardInput, $style.dayDateInput]"
                     type="date"
@@ -81,29 +86,43 @@
                 <select 
                     :class="[$style.dayCardInput, $style.dayHideoutInput]"
                     v-model="dayToEdit.startHideout"
-                    disabled
                 >
+                    <option value="" disabled selected hidden>Select hideout</option>
+
+                    <option v-for="hideout in hideoutStore.getHideouts.value"
+                        :value="'/api/hideouts/' + hideout.id"
+                    >
+                        {{ hideout.name }}
+                    </option>
                 </select>
+
                 <select 
                     :class="[$style.dayCardInput, $style.dayHideoutInput]"
                     v-model="dayToEdit.endHideout"
-                    disabled
                 >
+                    <option v-for="hideout in hideoutStore.getHideouts.value"
+                        :value="'/api/hideouts/' + hideout.id"
+                    >
+                        {{ hideout.name }}
+                    </option>
                 </select>
             </div>
         </div>
+
         <div :class="$style.buttonsContainer">
             <ActionButton v-if="!isNewDay"
                 :name="'View'"
                 :btn-type="'default'"
                 @click="changeCurrentDay()"
             />
+
             <ActionButton  
                 :name="isNewDay ? 'Create' : 'Save'"
                 :btn-type="'save'"
                 :disabled="!isDayModified"
                 @click="isNewDay ? createDay() : editDay()"
             />
+            
             <ActionButton v-if="isNewDay"
                 :name="'Cancel'"
                 :btn-type="'cancel'"
@@ -147,7 +166,7 @@
     .dayCardInput {
         font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
         font-size: 18px;
-        font-weight: 700;
+        font-weight: 500;
         line-height: 28px;
         color: #383838;
         
@@ -169,7 +188,7 @@
         width: 170px;
     }
     .dayHideoutInput {
-        width: 170px;
+        width: 240px;
     }
     .buttonsContainer {
         display: grid;

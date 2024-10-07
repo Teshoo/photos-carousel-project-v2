@@ -18,7 +18,7 @@ async function fetchTripsAPI(): Promise<any> {
 }
 
 /**
- * @param {number|null} tripId
+ * @param {number} tripId
  * @returns {Promise}
  */
 function fetchTripAPI(tripId: number): Promise<any> {
@@ -34,6 +34,7 @@ function createTripAPI(tripToCreate: Trip): Promise<any> {
     params.name = tripToCreate.name;
     params.tripStages = tripToCreate.tripStages;
     params.extras = tripToCreate.extras;
+    params.hideouts = tripToCreate.hideouts;
     const config = {
         headers: {
             'content-type': 'application/ld+json'
@@ -43,7 +44,7 @@ function createTripAPI(tripToCreate: Trip): Promise<any> {
 }
 
 /**
- * @param {Trip|null} trip
+ * @param {Trip} trip
  * @returns {Promise}
  */
 function updateTripAPI(trip: Trip): Promise<any> {
@@ -60,7 +61,7 @@ function updateTripAPI(trip: Trip): Promise<any> {
 }
 
 /**
- * @param {number|null} tripId
+ * @param {number} tripId
  * @returns {Promise}
  */
 function deleteTripAPI(tripAPI: number): Promise<any> {
@@ -148,6 +149,7 @@ export function tripAPIToTrip(tripAPI: TripAPI): Trip {
         name: tripAPI.name,
         tripStages: tripAPI.tripStages,
         extras: tripAPI.extras,
+        hideouts: tripAPI.hideouts
     };
 }
 
@@ -177,6 +179,7 @@ export function tripToTripAPI(trip: Trip, tripAPI: TripAPI): TripAPI {
         name: trip.name,
         tripStages: trip.tripStages,
         extras: trip.extras,
+        hideouts: trip.hideouts
     };
 }
 
@@ -190,6 +193,7 @@ export function cloneTrip(trip: Trip): Trip {
         name: trip.name,
         tripStages: trip.tripStages,
         extras: trip.extras,
+        hideouts: trip.hideouts
     };
 }
 

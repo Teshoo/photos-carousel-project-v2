@@ -47,10 +47,14 @@ class Trip
     #[ORM\OneToMany(mappedBy: 'trip', targetEntity: Extra::class)]
     private Collection $extras;
 
+    #[ORM\OneToMany(mappedBy: 'trip', targetEntity: Hideout::class)]
+    private Collection $hideouts;
+
     public function __construct()
     {
         $this->tripStages = new ArrayCollection();
         $this->extras = new ArrayCollection();
+        $this->hideouts = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -124,6 +128,36 @@ class Trip
             // set the owning side to null (unless already changed)
             if ($extra->getTrip() === $this) {
                 $extra->setTrip(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Hideout>
+     */
+    public function getHideouts(): Collection
+    {
+        return $this->hideouts;
+    }
+
+    public function addHideout(Hideout $hideout): static
+    {
+        if (!$this->hideouts->contains($hideout)) {
+            $this->hideouts->add($hideout);
+            $hideout->setTrip($this);
+        }
+
+        return $this;
+    }
+
+    public function removeHideout(Hideout $hideout): static
+    {
+        if ($this->hideouts->removeElement($hideout)) {
+            // set the owning side to null (unless already changed)
+            if ($hideout->getTrip() === $this) {
+                $hideout->setTrip(null);
             }
         }
 
