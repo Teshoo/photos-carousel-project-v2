@@ -23,7 +23,7 @@ This project is an **update of a [first version](https://github.com/Teshoo/photo
 
 - [x]  **Pictures** creating, updating and deleting
 - [x]  **Trips, Stages and Days** creating, updating and deleting
-- [ ]  **Hideout** creating, updating and deleting
+- [x]  **Hideout** creating, updating and deleting
 - [ ]  **Extras** creating, updating and deleting
 - [ ]  [**Core feature**](https://github.com/Teshoo/photos-carousel-project-v1) integration and rework ([display part](https://i.ibb.co/LSR1P8m/demo-projet-v1.gif))
 - [ ]  **UX improvements**  (tooltips, components loading, etc.)
