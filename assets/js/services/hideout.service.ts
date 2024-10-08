@@ -15,7 +15,7 @@ import type { Hideout, HideoutAPI } from '../types/types';
 async function fetchHideoutsAPI(tripId: number): Promise<any> {
     const params: {[index: string]:any}= {};
     if (tripId) {
-        params.tripId = '/api/trips/' + tripId;
+        params.trip = '/api/trips/' + tripId;
     }
     return axios.get('/api/hideouts', {
         params,
