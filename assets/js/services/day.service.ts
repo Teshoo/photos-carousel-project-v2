@@ -9,7 +9,7 @@ import type { TripDayAPI, TripDay } from '../types/types';
 ///////////////////
 
 /**
- * @param {string|null} stageId
+ * @param {number} stageId
  * @returns {Promise}
  */
 function fetchDaysAPI(stageId: number): Promise<any> {
@@ -23,7 +23,7 @@ function fetchDaysAPI(stageId: number): Promise<any> {
 }
 
 /**
- * @param {number|null} tripDayId
+ * @param {number} tripDayId
  * @returns {Promise}
  */
 function fetchDayAPI(tripDayId: number): Promise<any> {
@@ -48,7 +48,7 @@ function createDayAPI(dayToCreate: TripDay): Promise<any> {
 }
 
 /**
- * @param {TripDay|null} day
+ * @param {TripDay} day
  * @returns {Promise}
  */
 function updateDayAPI(day: TripDay): Promise<any> {
@@ -65,7 +65,7 @@ function updateDayAPI(day: TripDay): Promise<any> {
 }
 
 /**
- * @param {number|null} dayId
+ * @param {number} dayId
  * @returns {Promise}
  */
 function deleteDayAPI(dayId: number): Promise<any> {

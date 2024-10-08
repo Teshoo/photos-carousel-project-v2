@@ -9,7 +9,7 @@ import type { TripStageAPI, TripStage, Trip } from '../types/types';
 ///////////////////
 
 /**
- * @param {string|null} tripId
+ * @param {number} tripId
  * @returns {Promise}
  */
 function fetchStagesAPI(tripId: number): Promise<any> {
@@ -23,7 +23,7 @@ function fetchStagesAPI(tripId: number): Promise<any> {
 }
 
 /**
- * @param {number|null} tripStageId
+ * @param {number} tripStageId
  * @returns {Promise}
  */
 function fetchStageAPI(tripStageId: number): Promise<any> {
@@ -49,7 +49,7 @@ function createStageAPI(stageToCreate: TripStage): Promise<any> {
 }
 
 /**
- * @param {TripStage|null} stage
+ * @param {TripStage} stage
  * @returns {Promise}
  */
 function updateStageAPI(stage: TripStage): Promise<any> {
@@ -66,7 +66,7 @@ function updateStageAPI(stage: TripStage): Promise<any> {
 }
 
 /**
- * @param {number|null} stageId
+ * @param {number} stageId
  * @returns {Promise}
  */
 function deleteStageAPI(stageId: number): Promise<any> {
@@ -137,7 +137,7 @@ export async function updateStage(stageToUpdate: TripStage): Promise<any> {
  * @param {TripStage} stageToDelete
  * @returns {Promise}
  */
-export async function deleteStage(stageToDelete: TripStage): Promise<any> {
+export async function deleteStage(stageToDelete: TripStage): Promise<void> {
     try {
         await deleteStageAPI(stageToDelete.id);
     } catch (error) {

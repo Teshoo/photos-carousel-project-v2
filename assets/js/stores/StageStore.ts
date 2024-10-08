@@ -25,25 +25,25 @@ export const useStageStore = defineStore('Stage', () => {
     const getCurrentStage = computed<Ref<TripStage>>(() => currentStage);
 
     // ACTIONS
-    async function browseStages() {
+    async function browseStages(): Promise<void> {
         stages.value = await fetchStages(tripStore.getCurrentTrip.value.id);
     }
 
-    async function browseCurrentStage(id: number) {
+    async function browseCurrentStage(id: number): Promise<void> {
         if (currentStage.value.id === -1 || id !== currentStage.value.id) {
             currentStage.value = await fetchStage(id);
         }
     }
 
-    async function newStage(stage: TripStage) {
+    async function newStage(stage: TripStage): Promise<void> {
         await createStage(stage).then(browseStages);
     }
 
-    async function editStage(stage: TripStage) {
+    async function editStage(stage: TripStage): Promise<void> {
         await updateStage(stage).then(browseStages);
     }
 
-    async function updateCurrentStage(stage: TripStage) {
+    async function updateCurrentStage(stage: TripStage): Promise<void> {
         currentStage.value = await updateStage(stage);
         browseStages();
     }

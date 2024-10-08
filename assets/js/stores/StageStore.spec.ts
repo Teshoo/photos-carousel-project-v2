@@ -110,7 +110,7 @@ describe('StageStore', () => {
     describe('removeStage()', () => {
         it('calls deleteStage() and browseStages()', async () => {
             const stageStore = useStageStore(createPinia());
-            vi.mocked(deleteStage).mockResolvedValue({});
+            vi.mocked(deleteStage).mockResolvedValue();
             
             await stageStore.removeStage(defaultStage);
     

@@ -9,7 +9,7 @@ import type { Picture, PictureAPI } from '../types/types';
 ///////////////////
 
 /**
- * @param {string|null} dayId
+ * @param {number} dayId
  * @returns {Promise}
  */
 function fetchPicturesAPI(dayId: number): Promise<any> {
@@ -44,7 +44,7 @@ function createPictureAPI(pictureToCreate: Picture, imageFile: File): Promise<an
 }
 
 /**
- * @param {Picture|null} picture
+ * @param {Picture} picture
  * @returns {Promise}
  */
 function updatePictureAPI(picture: Picture): Promise<any> {
@@ -61,7 +61,7 @@ function updatePictureAPI(picture: Picture): Promise<any> {
 }
 
 /**
- * @param {number|null} pictureId
+ * @param {number} pictureId
  * @returns {Promise}
  */
 function deletePictureAPI(pictureId: number): Promise<any> {
@@ -128,7 +128,7 @@ export async function deletePicture(pictureToDelete: Picture) {
 }
 
 /**
- * @param {PictureAPI} PictureAPI
+ * @param {PictureAPI} pictureAPI
  * @returns {Picture}
  */
 export function pictureAPIToPicture(pictureAPI: PictureAPI): Picture {
