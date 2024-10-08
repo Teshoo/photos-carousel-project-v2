@@ -35,7 +35,7 @@
     );
 
     const hasPictures = computed<boolean>(
-        () => pictureStore.getPictures.value.length !== 0
+        () => dayToEdit.value.pictures.length !== 0
     );
     
     // METHODS //

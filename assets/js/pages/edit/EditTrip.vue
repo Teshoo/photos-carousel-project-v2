@@ -41,17 +41,14 @@
         trip: '/api/trips/' + tripToEdit.value.id
     });
 
-    const isLoading = computed<boolean>(
-        () => areStagesLoading.value || areHideoutsLoading.value
-    );
     const isTripModified = computed<boolean>(
         () => JSON.stringify(tripStore.getCurrentTrip.value) !== JSON.stringify(tripToEdit.value)
     );
     const hasStages = computed<boolean>(
-        () => stageStore.getStages.value.length !== 0
+        () => tripToEdit.value.tripStages.length !== 0
     );
     const hasHideouts = computed<boolean>(
-        () => hideoutStore.getHideouts.value.length !== 0
+        () => tripToEdit.value.hideouts.length !== 0
     );
 
     browseStages();
@@ -96,6 +93,9 @@
         () => tripStore.getCurrentTrip.value,
         () => { 
             isStageCreating.value = false;
+            isHideoutCreating.value = false;
+            areHideoutsLoading.value = true;
+            areStagesLoading.value = true;
             tripToEdit.value = cloneCurrentTrip();
             emptyStage.value.trip = '/api/trips/' + tripToEdit.value.id;
             browseStages();
@@ -134,7 +134,9 @@
             </div>
         </div>
 
-        <div v-if="!isLoading" :class="$style.subContainer">
+        <div v-if="!areStagesLoading && !areHideoutsLoading" 
+            :class="$style.subContainer"
+        >
             <div v-if="!areStagesLoading"
                 :class="$style.itemsContainer"
             >

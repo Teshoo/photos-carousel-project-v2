@@ -33,7 +33,7 @@
         () => JSON.stringify(stageStore.getCurrentStage.value) !== JSON.stringify(stageToEdit.value)
     );
     const hasDays = computed<boolean>(
-        () => dayStore.getDays.value.length !== 0
+        () => stageToEdit.value.tripDays.length !== 0
     );
 
     browseDays();
