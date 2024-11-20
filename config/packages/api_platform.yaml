@@ -2,3 +2,6 @@ api_platform:
     formats:
         multipart: ['multipart/form-data']
         jsonld: ['application/ld+json']
+    use_symfony_listeners: true
+    serializer:
+        hydra_prefix: true
