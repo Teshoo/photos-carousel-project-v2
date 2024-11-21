@@ -1,5 +1,5 @@
 <script setup lang="ts">
-    import { ref, useTemplateRef, type Ref } from 'vue';
+    import { computed, ref, useTemplateRef, type Ref } from 'vue';
     import { LMap, LTileLayer, LMarker, LIcon } from '@vue-leaflet/vue-leaflet';
     import 'leaflet/dist/leaflet.css';
     import type { TripStage } from '@/js/types/types';
@@ -17,7 +17,7 @@
     // MAP ATTRIBUTES //
 
     const zoom: Ref<number> = ref(10);
-    const stageCenter: Ref<[any, any]> = ref([stageLat.value, stageLng.value]);
+    const stageCenter = computed<[string, string]>(() => [stageLat.value, stageLng.value]);
     const iconSize: Ref<[number, number]> = ref([15, 15]);
 
     // BOOLEANS //

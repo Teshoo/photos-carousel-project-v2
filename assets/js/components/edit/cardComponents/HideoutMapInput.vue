@@ -1,5 +1,5 @@
 <script setup lang="ts">
-    import { ref, useTemplateRef, type Ref } from 'vue';
+    import { computed, ref, useTemplateRef, type Ref } from 'vue';
     import { LMap, LTileLayer, LMarker, LIcon } from '@vue-leaflet/vue-leaflet';
     import 'leaflet/dist/leaflet.css';
     import type { Hideout } from '@/js/types/types';
@@ -17,9 +17,9 @@
     // MAP ATTRIBUTES //
 
     const zoom: Ref<number> = ref(10);
-    const hideoutCenter: Ref<[any, any]> = ref([hideoutLat.value, hideoutLng.value]);
+    const hideoutCenter = computed<[string, string]>(() => [hideoutLat.value, hideoutLng.value]);
     const iconSize: Ref<[number, number]> = ref([15, 15]);
-
+    
     // BOOLEANS //
 
     function isHideoutToEdit(hideout: Hideout): boolean {

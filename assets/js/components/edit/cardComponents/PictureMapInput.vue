@@ -1,5 +1,5 @@
 <script setup lang="ts">
-    import { ref, useTemplateRef, type Ref } from 'vue';
+    import { computed, ref, useTemplateRef, type Ref } from 'vue';
     import { LMap, LTileLayer, LMarker, LIcon, LPolyline } from '@vue-leaflet/vue-leaflet';
     import 'leaflet/dist/leaflet.css';
     import type { Picture } from '@/js/types/types';
@@ -19,7 +19,7 @@
     // MAP ATTRIBUTES //
 
     const zoom: Ref<number> = ref(18);
-    const pictureCenter: Ref<[string, string]> = ref([pictureLat.value, pictureLng.value]);
+    const pictureCenter = computed<[string, string]>(() => [pictureLat.value, pictureLng.value]);
     const iconSize: Ref<[number, number]> = ref([15, 15]);
     const polylineColor: Ref<string> = ref('#FF5470');
     const polylineDashArray: Ref<string> = ref('1 4');
