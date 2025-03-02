@@ -13,8 +13,10 @@ export const useTripStore = defineStore('Trip', () => {
         id: -1,
         name: '',
         tripStages: [],
+        hideouts: [],
         extras: []
     });
+    const isEditMode: Ref<boolean> = ref(false);
 
     // GETTERS
     const getTrips = computed<Ref<Trip[]>>(() => trips);
@@ -44,5 +46,13 @@ export const useTripStore = defineStore('Trip', () => {
         await deleteTrip(trip).then(browseTrips);
     }
 
-    return { trips, currentTrip, getTrips, getCurrentTrip, browseTrips, browseCurrentTrip, newTrip, updateCurrentTrip, removeTrip } 
+    function setToEditMode(): void {
+        isEditMode.value = true;
+    }
+
+    function setToNormalMode(): void {
+        isEditMode.value = false;
+    }
+
+    return { trips, currentTrip, isEditMode, getTrips, getCurrentTrip, browseTrips, browseCurrentTrip, newTrip, updateCurrentTrip, removeTrip, setToEditMode, setToNormalMode } 
 });

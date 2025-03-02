@@ -1,29 +1,28 @@
 <script setup lang="ts">
     import { useRouter } from 'vue-router';
-    import type { TripStage } from '@/js/types/types'
-    import { useStageStore } from '@/js/stores/StageStore';
-    import editIcon from '@/icons/edit_icon.svg';
+    import type { TripDay } from '@/js/types/types'
+    import { useDayStore } from '@/js/stores/DayStore';
 
-    defineProps<{ stage: TripStage }>()
+    defineProps<{ day: TripDay }>()
 
     const router = useRouter();
-    const stageStore = useStageStore();
+    const dayStore = useDayStore();
 
-    async function changeCurrentStage(stage: TripStage) {
-        await stageStore.browseCurrentStage(stage.id);
-        router.push({ name: 'dayList', params: { stageId: stageStore.getCurrentStage.value.id } });
+    async function changeCurrentDay(day: TripDay) {
+        await dayStore.browseCurrentDay(day.id);
+        router.push({ name: 'carousel', params: { dayId: dayStore.getCurrentDay.value.id } });
     }
 </script>
 
 <template>
     <div 
         :class="$style.card"
-        @click="changeCurrentStage(stage)"
+        @click="changeCurrentDay(day)"
     >
-        <div :class="$style.stageName">
-            {{ stage.name }}
+        <div :class="$style.dayName">
+            {{ day.name }}
         </div>
-        <div :class="$style.stageStats">
+        <div :class="$style.dayStats">
             > ## pictures
         </div>
     </div>
@@ -49,7 +48,7 @@
 
         cursor: pointer;
     }
-    .stageName {
+    .dayName {
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -70,7 +69,7 @@
         text-align: left;
         color: #FFFFFF;
     }
-    .stageStats {
+    .dayStats {
         display: flex;
         flex-direction: column;
         justify-content: center;

@@ -23,6 +23,20 @@ function fetchPicturesAPI(dayId: number): Promise<any> {
 }
 
 /**
+ * @param {number} stageId
+ * @returns {Promise}
+ */
+function fetchStagePicturesAPI(stageId: number): Promise<any> {
+    const params: {[index: string]:any}= {};
+    if (stageId) {
+        params["tripDay.tripStage"] = '/api/trip_stages/' + stageId;
+    }
+    return axios.get('/api/pictures', {
+        params,
+    });
+}
+
+/**
  * @param {Picture} pictureToCreate
  * @param {File} imageFile
  * @returns {Promise}
@@ -87,6 +101,20 @@ export async function fetchPictures(dayId: number): Promise<any> {
 }
 
 /**
+ * @param {number} stageId
+ * @returns {Promise}
+ */
+export async function fetchStagePictures(stageId: number): Promise<any> {
+    try {
+        const response = await fetchStagePicturesAPI(stageId);
+        const pictures: Picture[] = picturesAPIToPictures(response.data['hydra:member']);
+        return pictures;
+    } catch (error) {
+        console.log('Could not retrieve pictures: ' + error);
+    }
+}
+
+/**
  * @param {Picture} pictureToUpdate
  * @returns {Promise}
  */
@@ -131,7 +159,7 @@ export async function deletePicture(pictureToDelete: Picture) {
  * @param {PictureAPI} pictureAPI
  * @returns {Picture}
  */
-export function pictureAPIToPicture(pictureAPI: PictureAPI): Picture {
+function pictureAPIToPicture(pictureAPI: PictureAPI): Picture {
     return {
         id: pictureAPI.id,
         name: pictureAPI.name,
@@ -148,7 +176,7 @@ export function pictureAPIToPicture(pictureAPI: PictureAPI): Picture {
  * @param {PictureAPI[]} picturesAPI
  * @returns {Picture[]}
  */
-export function picturesAPIToPictures(picturesAPI: PictureAPI[]): Picture[] {
+function picturesAPIToPictures(picturesAPI: PictureAPI[]): Picture[] {
     let pictures: Picture[] = [];
     const pictures$ = of(picturesAPI).pipe(
         map(picturesAPI => picturesAPI
@@ -164,7 +192,7 @@ export function picturesAPIToPictures(picturesAPI: PictureAPI[]): Picture[] {
  * @param {PictureAPI} picturesAPI
  * @returns {PictureAPI}
  */
-export function pictureToPictureAPI(picture: Picture, picturesAPI: PictureAPI): PictureAPI {
+function pictureToPictureAPI(picture: Picture, picturesAPI: PictureAPI): PictureAPI {
     return {
         ...picturesAPI,
         name: picture.name,

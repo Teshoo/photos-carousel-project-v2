@@ -47,7 +47,7 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
         ),
     ]
 )]
-#[ApiFilter (SearchFilter::class, properties: ['tripDay' => 'exact'])]
+#[ApiFilter (SearchFilter::class, properties: ['tripDay' => 'exact', 'tripDay.tripStage' => 'exact'])]
 class Picture
 {
     #[ORM\Id]

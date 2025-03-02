@@ -9,7 +9,12 @@
     const router = useRouter();
     const tripStore = useTripStore();
 
-    async function changeCurrentTrip(trip: Trip) {
+    async function toStageList(trip: Trip) {
+        await tripStore.browseCurrentTrip(trip.id);
+        router.push({ name: 'stageList', params: { tripId: tripStore.getCurrentTrip.value.id } });
+    }
+
+    async function toEditTripPage(trip: Trip) {
         await tripStore.browseCurrentTrip(trip.id);
         router.push({ name: 'editTrip', params: { tripId: tripStore.getCurrentTrip.value.id } });
     }
@@ -19,14 +24,20 @@
     <div :class="$style.card">
         <div 
             :class="$style.editButton"
-            @click="changeCurrentTrip(trip)"
+            @click= toEditTripPage(trip)
         >
             <editIcon/>
         </div>
-        <div :class="$style.tripName">
+        <div 
+            :class="$style.tripName"
+            @click= toStageList(trip)
+        >
             {{ trip.name }}
         </div>
-        <div :class="$style.tripStats">
+        <div 
+            :class="$style.tripStats"
+            @click= toStageList(trip)
+        >
             <div>
                 > {{ trip.tripStages.length }} étapes
             </div>
@@ -78,6 +89,8 @@
         text-transform: uppercase;
         text-align: left;
         color: #FFFFFF;
+
+        cursor: pointer;
     }
     .editButton {
         display: grid;
@@ -116,5 +129,7 @@
         letter-spacing: 0.1em;
         text-align: left;
         color: #FFFFFF;
+
+        cursor: pointer;
     }
 </style>

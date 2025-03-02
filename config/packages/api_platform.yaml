@@ -1,4 +1,6 @@
 api_platform:
+    defaults:
+        pagination_enabled: false
     formats:
         multipart: ['multipart/form-data']
         jsonld: ['application/ld+json']

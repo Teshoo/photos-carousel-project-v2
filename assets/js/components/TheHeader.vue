@@ -17,17 +17,29 @@
 
     async function changeCurrentTrip(trip: Trip) {
         await tripStore.browseCurrentTrip(trip.id);
-        router.push({ name: 'editTrip', params: { tripId: tripStore.getCurrentTrip.value.id }});
+        if (tripStore.isEditMode === true) {
+            router.push({ name: 'editTrip', params: { tripId: tripStore.getCurrentTrip.value.id }});
+        } else {
+            router.push({ name: 'stageList', params: { tripId: tripStore.getCurrentTrip.value.id }});
+        }
     }
 
     async function changeCurrentStage(stage: TripStage) {
         await stageStore.browseCurrentStage(stage.id);
-        router.push({ name: 'editStage', params: { stageId: stageStore.getCurrentStage.value.id }});
+        if (tripStore.isEditMode === true) {
+            router.push({ name: 'editStage', params: { stageId: stageStore.getCurrentStage.value.id }});
+        } else {
+            router.push({ name: 'dayList', params: { stageId: stageStore.getCurrentStage.value.id }});
+        }
     }
 
     async function changeCurrentDay(day: TripDay) {
         await dayStore.browseCurrentDay(day.id);
-        router.push({ name: 'editDay', params: { dayId: dayStore.getCurrentDay.value.id }});
+        if (tripStore.isEditMode === true) {
+            router.push({ name: 'editDay', params: { dayId: dayStore.getCurrentDay.value.id }});
+        } else {
+            router.push({ name: 'carousel', params: { dayId: dayStore.getCurrentDay.value.id }});
+        }
     }
 </script>
 
@@ -49,10 +61,10 @@
                     </div>
                 </router-link>
             </div>
-            <chevronbcUrl v-if="route.params.tripId"/>
+            <chevronbcUrl v-if="route.params.tripId && tripStore.isEditMode"/>
             <div
                 :class="$style.editingLabel" 
-                v-if="route.params.tripId"
+                v-if="route.params.tripId && tripStore.isEditMode"
             >
                 Editing
             </div>

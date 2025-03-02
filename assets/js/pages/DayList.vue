@@ -1,26 +1,26 @@
 <script setup lang="ts">
     import { ref, watch, type Ref } from 'vue';
-    import { useTripStore } from '@/js/stores/TripStore';
     import { useStageStore } from '@/js/stores/StageStore';
-    import StageCard from '@/js/components/StageCard.vue';
+    import { useDayStore } from '@/js/stores/DayStore';
+    import DayCard from '@/js/components/DayCard.vue';
 
-    const tripStore = useTripStore();
     const stageStore = useStageStore();
-    const areStagesLoading: Ref<boolean> = ref(true);
+    const dayStore = useDayStore();
+    const areDaysLoading: Ref<boolean> = ref(true);
 
-    browseStages();
+    browseDays();
 
     // METHODS
     
-    function browseStages(): void {
-        stageStore.browseStages().then(() => areStagesLoading.value = false);
+    function browseDays(): void {
+        dayStore.browseDays().then(() => areDaysLoading.value = false);
     }
 
     watch(
-        () => tripStore.getCurrentTrip.value,
+        () => stageStore.getCurrentStage.value,
         () => { 
-            areStagesLoading.value = true;
-            browseStages();
+            areDaysLoading.value = true;
+            browseDays();
         }
     );
 
@@ -28,21 +28,21 @@
 <template>
     <div :class="$style.container">
         <div :class="$style.title">
-            {{ tripStore.getCurrentTrip.value.name.toUpperCase() }}
+            {{ stageStore.getCurrentStage.value.name.toUpperCase() }}
         </div>
-        <div v-if="areStagesLoading"
+        <div v-if="areDaysLoading"
             :class="$style.loading"
         >
             Loading...
         </div>
-        <div v-if="!areStagesLoading"
-            :class="$style.stagesContainer"
+        <div v-if="!areDaysLoading"
+            :class="$style.daysContainer"
         >
-            <div :class="$style.stageCards">
-                <div v-for="stage in stageStore.getStages.value">
-                    <stage-card
-                        :stage="stage"
-                        :key="stage.id"
+            <div :class="$style.dayCards">
+                <div v-for="day in dayStore.getDays.value">
+                    <day-card
+                        :day="day"
+                        :key="day.id"
                     /> 
                 </div>
             </div>
@@ -69,7 +69,7 @@
         color: #FFEFD5;
     }
 
-    .stagesContainer {
+    .daysContainer {
         display: grid;
         grid-template-columns: 1fr 1fr;
         justify-content: space-between;
@@ -77,7 +77,7 @@
         gap: 20px;
     }
 
-    .stageCards {
+    .dayCards {
         display: grid;
         grid-template-columns: 1fr;
         gap: 15px;
