@@ -15,7 +15,8 @@
         id: -1,
         name: 'New Trip',
         tripStages: [],
-        extras: []
+        extras: [],
+        hideouts: []
     });
 
     browseTrips();
@@ -35,7 +36,7 @@
 <template>
     <div :class="$style.container">
         <div :class="$style.title">
-            VOYAGES
+            TRIPS
         </div>
         <div v-if="isLoading"
             :class="$style.loading"

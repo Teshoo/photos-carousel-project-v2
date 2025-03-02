@@ -143,7 +143,7 @@ export async function deleteTrip(tripToDelete: Trip): Promise<any> {
  * @param {TripAPI} tripAPI
  * @returns {Trip}
  */
-export function tripAPIToTrip(tripAPI: TripAPI): Trip {
+function tripAPIToTrip(tripAPI: TripAPI): Trip {
     return {
         id: tripAPI.id,
         name: tripAPI.name,
@@ -157,7 +157,7 @@ export function tripAPIToTrip(tripAPI: TripAPI): Trip {
  * @param {TripAPI[]} tripsAPI
  * @returns {Trip[]}
  */
-export function tripsAPIToTrips(tripsAPI: TripAPI[]): Trip[] {
+function tripsAPIToTrips(tripsAPI: TripAPI[]): Trip[] {
     let trips: Trip[] = [];
     const trips$ = of(tripsAPI).pipe(
         map(tripsAPI => tripsAPI
@@ -173,7 +173,7 @@ export function tripsAPIToTrips(tripsAPI: TripAPI[]): Trip[] {
  * @param {TripAPI} tripAPI
  * @returns {TripAPI}
  */
-export function tripToTripAPI(trip: Trip, tripAPI: TripAPI): TripAPI {
+function tripToTripAPI(trip: Trip, tripAPI: TripAPI): TripAPI {
     return {
         ...tripAPI,
         name: trip.name,
@@ -196,5 +196,3 @@ export function cloneTrip(trip: Trip): Trip {
         hideouts: trip.hideouts
     };
 }
-
-export const forTesting = { fetchTripsAPI, fetchTripAPI, createTripAPI, updateTripAPI }

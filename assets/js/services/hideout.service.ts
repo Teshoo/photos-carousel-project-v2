@@ -127,7 +127,7 @@ export async function deleteHideout(hideoutToDelete: Hideout): Promise<void> {
  * @param {HideoutAPI} hideoutAPI
  * @returns {Hideout}
  */
-export function hideoutAPIToHideout(hideoutAPI: HideoutAPI): Hideout {
+function hideoutAPIToHideout(hideoutAPI: HideoutAPI): Hideout {
     return {
         id: hideoutAPI.id,
         name: hideoutAPI.name,
@@ -141,7 +141,7 @@ export function hideoutAPIToHideout(hideoutAPI: HideoutAPI): Hideout {
  * @param {HideoutAPI[]} hideoutsAPI
  * @returns {Hideout[]}
  */
-export function hideoutsAPIToHideouts(hideoutsAPI: HideoutAPI[]): Hideout[] {
+function hideoutsAPIToHideouts(hideoutsAPI: HideoutAPI[]): Hideout[] {
     let hideouts: Hideout[] = [];
     const hideouts$ = of(hideoutsAPI).pipe(
         map(hideoutsAPI => hideoutsAPI
@@ -157,7 +157,7 @@ export function hideoutsAPIToHideouts(hideoutsAPI: HideoutAPI[]): Hideout[] {
  * @param {HideoutAPI} hideoutAPI
  * @returns {HideoutAPI}
  */
-export function hideoutToHideoutAPI(hideout: Hideout, hideoutAPI: HideoutAPI): HideoutAPI {
+function hideoutToHideoutAPI(hideout: Hideout, hideoutAPI: HideoutAPI): HideoutAPI {
     return {
         ...hideoutAPI,
         name: hideout.name,

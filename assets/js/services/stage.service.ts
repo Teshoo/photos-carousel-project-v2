@@ -149,7 +149,7 @@ export async function deleteStage(stageToDelete: TripStage): Promise<void> {
  * @param {TripStageAPI} stageAPI
  * @returns {TripStage}
  */
-export function stageAPIToStage(stageAPI: TripStageAPI): TripStage {
+function stageAPIToStage(stageAPI: TripStageAPI): TripStage {
     return {
         id: stageAPI.id,
         name: stageAPI.name,
@@ -164,7 +164,7 @@ export function stageAPIToStage(stageAPI: TripStageAPI): TripStage {
  * @param {TripStageAPI[]} stagesAPI
  * @returns {TripStage[]}
  */
-export function stagesAPIToStages(stagesAPI: TripStageAPI[]): TripStage[] {
+function stagesAPIToStages(stagesAPI: TripStageAPI[]): TripStage[] {
     let stages: TripStage[] = [];
     const stages$ = of(stagesAPI).pipe(
         map(stagesAPI => stagesAPI
@@ -180,7 +180,7 @@ export function stagesAPIToStages(stagesAPI: TripStageAPI[]): TripStage[] {
  * @param {TripStageAPI} stageAPI
  * @returns {TripStageAPI}
  */
-export function stageToStageAPI(stage: TripStage, stageAPI: TripStageAPI): TripStageAPI {
+function stageToStageAPI(stage: TripStage, stageAPI: TripStageAPI): TripStageAPI {
     return {
         ...stageAPI,
         name: stage.name,

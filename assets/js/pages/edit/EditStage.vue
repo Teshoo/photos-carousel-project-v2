@@ -4,6 +4,7 @@
     import { useTripStore } from '@/js/stores/TripStore';
     import { useStageStore } from '@/js/stores/StageStore';
     import { useDayStore } from '@/js/stores/DayStore';
+    import { useHideoutStore } from '@/js/stores/HideoutStore';
     import EditDayCard from '@/js/components/edit/EditDayCard.vue';
     import type { TripDay, TripStage } from '@/js/types/types';
     import { cloneStage } from '@/js/services/stage.service';
@@ -14,9 +15,11 @@
     const tripStore = useTripStore();
     const stageStore = useStageStore();
     const dayStore = useDayStore();
+    const hideoutStore = useHideoutStore();
 
     const stageToEdit: Ref<TripStage> = ref(cloneCurrentStage());
-    const isLoading: Ref<boolean> = ref(true);
+    const areDaysLoading: Ref<boolean> = ref(true);
+    const areHideoutsLoading: Ref<boolean> = ref(true);
     const isHovering: Ref<boolean> = ref(false);
     const isDayCreating:Ref<boolean>= ref(false);
     const emptyDay: Ref<TripDay> = ref({
@@ -35,13 +38,21 @@
     const hasDays = computed<boolean>(
         () => stageToEdit.value.tripDays.length !== 0
     );
+    const isLoading = computed<boolean>(
+        () => areDaysLoading.value || areHideoutsLoading.value
+    )
 
     browseDays();
+    browseHideouts();
 
     // METHODS //
 
     function browseDays(): void {
-        dayStore.browseDays().then(() => isLoading.value = false);
+        dayStore.browseDays().then(() => areDaysLoading.value = false);
+    }
+
+    function browseHideouts(): void {
+        hideoutStore.browseHideouts().then(() => areHideoutsLoading.value = false);
     }
 
     function cloneCurrentStage(): TripStage {
