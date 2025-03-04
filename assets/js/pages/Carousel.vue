@@ -2,7 +2,9 @@
     import { ref, watch, type Ref } from 'vue';
     import { useDayStore } from '@/js/stores/DayStore';
     import { usePictureStore } from '@/js/stores/PictureStore';
+    import { useHideoutStore } from '@/js/stores/HideoutStore';
     import Picture from '@/js/components/Picture.vue';
+    import CarouselMap from '@/js/components/Map.vue';
     import timeIcon from '@/icons/time_icon.svg';
     import tempIcon from '@/icons/temp_icon.svg';
     import nextIcon from '@/icons/nav_next_icon.svg';
@@ -10,12 +12,15 @@
     
     const dayStore = useDayStore();
     const pictureStore = usePictureStore();
+    const hideoutStore = useHideoutStore();
     const arePicturesLoading: Ref<boolean> = ref(true);
     const areAllStagePicturesLoading: Ref<boolean> = ref(true);
+    const areHideoutsLoading: Ref<boolean> = ref(true);
     const currentPictureIndex: Ref<number> = ref(0);
 
     browsePictures();
     browseAllStagePictures();
+    browseHideouts();
 
     // METHODS
     
@@ -28,6 +33,10 @@
 
     function browseAllStagePictures(): void {
         pictureStore.browseAllStagePictures().then(() => areAllStagePicturesLoading.value = false);
+    }
+
+    function browseHideouts(): void {
+        hideoutStore.browseHideouts().then(() => areHideoutsLoading.value = false);
     }
 
     function previousPicture(): void {
@@ -131,7 +140,16 @@
             </div>
         </div>
         <div :class="$style.mapSide">
-            map side
+            <div :class="$style.timestamp">
+                <div :class="$style.titles">
+                        Timestamp
+                </div>
+            </div>
+            <div :class="$style.mapContainer">
+                <CarouselMap 
+                    :currentPictureIndex = "currentPictureIndex"
+                />
+            </div>
         </div>
     </div>
 </template>
@@ -171,8 +189,20 @@
     }
     .mapSide {
         display: grid;
-        grid-template-rows: auto auto;
+        grid-template-rows: auto 1fr;
         gap: 10px;
+    }
+    .timestamp {
+        height: 90px;
+        width: 100%;
+    }
+    .mapContainer {
+        border-style: solid;
+        border-color: #FFF;
+        border-radius: 20px;
+        border-width: 1px;
+
+        height: 100%;
     }
     .pictureInfo {
         display: grid;
