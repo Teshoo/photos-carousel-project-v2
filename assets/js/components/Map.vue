@@ -15,6 +15,18 @@
     const pictureStore = usePictureStore();
     const hideoutStore = useHideoutStore();
 
+    interface FarthestCoordinates {
+        higestLat: number,
+        lowestLat: number,
+        higestLng: number,
+        lowestLng: number
+    }
+
+    const isPictureIndex = computed<boolean>(
+        () =>   props.currentPictureIndex !== -1 
+                && props.currentPictureIndex !== pictureStore.getPictures.value.length
+    );
+
     // MAP ATTRIBUTES
 
     const zoom: Ref<number> = ref(16);
@@ -31,7 +43,14 @@
     const polylineDashArray: Ref<string> = ref('1 4');
     const polylineDashOffset: Ref<string> = ref('20');
 
-    const center = computed<[string, string]>(() => [pictureStore.getCurrentPicture.value.lat, pictureStore.getCurrentPicture.value.lng]);
+    const center = computed<[string, string]>(() => {
+        if (!isPictureIndex.value) {
+            return getDayPicturesCenter();
+        } else {
+            return [pictureStore.getCurrentPicture.value.lat, pictureStore.getCurrentPicture.value.lng];
+        }
+        
+    });
 
     // BOOLEANS
 
@@ -60,6 +79,41 @@
     function getPreviousPicture(index: number): Picture {
         return pictureStore.getPictures.value[index-1];
     }
+
+    function getDayPicturesCenter(): [string, string] {
+        const farthestCoordinates: FarthestCoordinates = getFarthestCoordinates();
+        const centerLat: string = ((farthestCoordinates.higestLat + farthestCoordinates.lowestLat)/2).toString();
+        const centerLng: string = ((farthestCoordinates.higestLng + farthestCoordinates.lowestLng)/2).toString();
+        return [centerLat, centerLng];
+    }
+
+    function getFarthestCoordinates(): FarthestCoordinates {
+        let farthestCoordinates: FarthestCoordinates = {
+            higestLat: Number(pictureStore.pictures[0].lat),
+            lowestLat: Number(pictureStore.pictures[0].lat),
+            higestLng: Number(pictureStore.pictures[0].lng),
+            lowestLng: Number(pictureStore.pictures[0].lng)
+        }
+
+        pictureStore.pictures.forEach(picture => {
+            const pictureLat: number = Number(picture.lat);
+            const pictureLng: number = Number(picture.lng);
+
+            if (farthestCoordinates.higestLat < pictureLat) {
+                farthestCoordinates.higestLat = pictureLat;
+            }
+            if (farthestCoordinates.lowestLat > pictureLat) {
+                farthestCoordinates.lowestLat = pictureLat;
+            }
+            if (farthestCoordinates.higestLng < pictureLng) {
+                farthestCoordinates.higestLng = pictureLng;
+            }
+            if (farthestCoordinates.lowestLng > pictureLng) {
+                farthestCoordinates.lowestLng = pictureLng;
+            }
+        });
+        return farthestCoordinates;
+    }
 </script>
 <template>
     <l-map ref="map"
@@ -73,7 +127,8 @@
             layer-type="base"
             name="OpenStreetMap"
         />
-        <l-marker ref="marker"
+        <l-marker v-if="isPictureIndex"
+            ref="marker"
             :lat-lng="[pictureStore.getCurrentPicture.value.lat, pictureStore.getCurrentPicture.value.lng]"
             :z-index-offset="currentMarkerZIndex"
         >

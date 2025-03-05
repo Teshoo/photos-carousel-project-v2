@@ -1,28 +1,32 @@
 <script setup lang="ts">
-    import { useTemplateRef, watch } from 'vue';
+    import { computed, useTemplateRef, watch } from 'vue';
     import type { Picture } from '@/js/types/types';
     import { usePictureStore } from '@/js/stores/PictureStore';
 
-    const props = defineProps<{ picture: Picture }>();
+    const props = defineProps<{ picture: Picture, currentPictureIndex: number}>();
 
     const pictureStore = usePictureStore();
     const pictureRef = useTemplateRef('pictureRef');
 
+    const isPictureIndex = computed<boolean>(
+        () =>   props.currentPictureIndex !== -1 
+                && props.currentPictureIndex !== pictureStore.getPictures.value.length
+    );
+
     // METHODS
 
     watch(
-        () => pictureStore.getCurrentPicture.value,
+        [() => pictureStore.getCurrentPicture.value, () => props.currentPictureIndex],
         () => { 
             if (pictureRef.value !== null)
             {
-                if (props.picture.id === pictureStore.getCurrentPicture.value.id)
+                if (props.picture.id === pictureStore.getCurrentPicture.value.id && isPictureIndex.value)
                 {
                     pictureRef.value.scrollIntoView({behavior: 'smooth', inline: 'center'});
                 }
-                
             }
         }
-    )
+    );
 </script>
 <template>
     <img 

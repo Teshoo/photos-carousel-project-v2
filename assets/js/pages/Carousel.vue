@@ -1,5 +1,5 @@
 <script setup lang="ts">
-    import { ref, watch, type Ref } from 'vue';
+    import { ref, useTemplateRef, watch, type Ref } from 'vue';
     import { useDayStore } from '@/js/stores/DayStore';
     import { usePictureStore } from '@/js/stores/PictureStore';
     import { useHideoutStore } from '@/js/stores/HideoutStore';
@@ -13,10 +13,12 @@
     const dayStore = useDayStore();
     const pictureStore = usePictureStore();
     const hideoutStore = useHideoutStore();
+    const startScreenRef = useTemplateRef('startScreenRef');
+    const endScreenRef = useTemplateRef('endScreenRef');
     const arePicturesLoading: Ref<boolean> = ref(true);
     const areAllStagePicturesLoading: Ref<boolean> = ref(true);
     const areHideoutsLoading: Ref<boolean> = ref(true);
-    const currentPictureIndex: Ref<number> = ref(0);
+    const currentPictureIndex: Ref<number> = ref(-1);
 
     browsePictures();
     browseAllStagePictures();
@@ -44,6 +46,10 @@
         {
             currentPictureIndex.value--;
             pictureStore.changeCurrentPicture(pictureStore.getPictures.value[currentPictureIndex.value]);
+        } else if (currentPictureIndex.value === 0)
+        {
+            moveToElement(startScreenRef.value);
+            currentPictureIndex.value = -1;
         }
     }
 
@@ -52,17 +58,28 @@
         {
             currentPictureIndex.value++;
             pictureStore.changeCurrentPicture(pictureStore.getPictures.value[currentPictureIndex.value]);
+        } else if (currentPictureIndex.value === pictureStore.getPictures.value.length - 1)
+        {
+            moveToElement(endScreenRef.value);
+            currentPictureIndex.value = pictureStore.getPictures.value.length;
         }
     }
 
     function restartDay(): void {
-        currentPictureIndex.value = 0;
-        pictureStore.changeCurrentPicture(pictureStore.getPictures.value[currentPictureIndex.value]);
+        currentPictureIndex.value = -1;
+        moveToElement(startScreenRef.value);
     }
 
     function endDay(): void {
-        currentPictureIndex.value = pictureStore.getPictures.value.length - 1;
-        pictureStore.changeCurrentPicture(pictureStore.getPictures.value[currentPictureIndex.value]);
+        currentPictureIndex.value = pictureStore.getPictures.value.length;
+        moveToElement(endScreenRef.value);
+    }
+
+    function moveToElement(ref: HTMLDivElement | null): void {
+        if (ref)
+        {
+            ref.scrollIntoView({behavior: 'smooth', inline: 'center'});
+        }
     }
 
     watch(
@@ -103,10 +120,23 @@
                 </div>
             </div>
             <div :class="$style.pictureContainer">
+                <div 
+                    ref="startScreenRef"
+                    :class="$style.startScreen"
+                >
+                    Start
+                </div>
                 <Picture v-for="picture in pictureStore.getPictures.value"
                     :key = "picture.id"
                     :picture = "picture"
+                    :currentPictureIndex = "currentPictureIndex"
                 />
+                <div 
+                    ref="endScreenRef"
+                    :class="$style.endScreen"
+                >
+                    End
+                </div>
             </div>
             <div :class="$style.pictureNav">
                 <div :class="$style.pictureNavLeft">
@@ -254,6 +284,42 @@
         min-height: 0;
         width: 100%;
         height: 55vh;
+    }
+    .startScreen {
+        display: grid;
+        justify-items: center;
+        align-items: center;
+
+        box-sizing: content-box;
+
+        min-width: 100%;
+        height: 100%;
+
+        font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 0.3em;
+        text-align: left;
+        text-transform: uppercase;
+        color: #FFF;
+    }
+    .endScreen {
+        display: grid;
+        justify-items: center;
+        align-items: center;
+
+        box-sizing: content-box;
+        
+        min-width: 100%;
+        height: 100%;
+
+        font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 0.3em;
+        text-align: left;
+        text-transform: uppercase;
+        color: #FFF;
     }
     .pictureNav {
         display: grid;
