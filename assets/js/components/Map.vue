@@ -1,5 +1,5 @@
 <script setup lang="ts">
-    import { computed, ref, watch, type Ref } from 'vue';
+    import { computed, ref, useTemplateRef, watch, type Ref } from 'vue';
     import { LMap, LTileLayer, LMarker, LIcon, LPolyline } from '@vue-leaflet/vue-leaflet';
     import 'leaflet/dist/leaflet.css';
     import type { Picture } from '@/js/types/types';
@@ -14,13 +14,7 @@
 
     const pictureStore = usePictureStore();
     const hideoutStore = useHideoutStore();
-
-    interface FarthestCoordinates {
-        higestLat: number,
-        lowestLat: number,
-        higestLng: number,
-        lowestLng: number
-    }
+    const mapRef = useTemplateRef('map');
 
     const isPictureIndex = computed<boolean>(
         () =>   props.currentPictureIndex !== -1 
@@ -30,7 +24,8 @@
     // MAP ATTRIBUTES
 
     const zoom: Ref<number> = ref(16);
-
+    const center: Ref<[string, string]> = ref([pictureStore.getCurrentPicture.value.lat, pictureStore.getCurrentPicture.value.lng]);
+    
     const markerSize: Ref<[number, number]> = ref([15, 15]);
     const currentMarkerSize: Ref<[number, number]> = ref([25, 25]);
     const hideoutSize: Ref<[number, number]> = ref([30, 30]);
@@ -43,13 +38,20 @@
     const polylineDashArray: Ref<string> = ref('1 4');
     const polylineDashOffset: Ref<string> = ref('20');
 
-    const center = computed<[string, string]>(() => {
-        if (!isPictureIndex.value) {
-            return getDayPicturesCenter();
-        } else {
-            return [pictureStore.getCurrentPicture.value.lat, pictureStore.getCurrentPicture.value.lng];
-        }
-        
+    const getPicturesLatLng = computed<number[][]>(() => {
+        const picturesLatLng: number[][] = [];
+        pictureStore.getPictures.value.forEach(
+            picture => picturesLatLng.push([Number(picture.lat), Number(picture.lng)])
+        );
+        return picturesLatLng;
+    });
+
+    const getAllStagePicturesLatLng = computed<number[][]>(() => {
+        const allStagepicturesLatLng: number[][] = [];
+        pictureStore.getAllStagePictures.value.forEach(
+            picture => allStagepicturesLatLng.push([Number(picture.lat), Number(picture.lng)])
+        );
+        return allStagepicturesLatLng;
     });
 
     // BOOLEANS
@@ -76,44 +78,40 @@
         }
     }
 
+    function fitBounds(): void {
+        if (!isPictureIndex.value) {   
+            fitDayPicturesBounds();                 
+        } else {
+            fitCurrentPictureBounds();
+        }
+    }
+
     function getPreviousPicture(index: number): Picture {
         return pictureStore.getPictures.value[index-1];
     }
 
-    function getDayPicturesCenter(): [string, string] {
-        const farthestCoordinates: FarthestCoordinates = getFarthestCoordinates();
-        const centerLat: string = ((farthestCoordinates.higestLat + farthestCoordinates.lowestLat)/2).toString();
-        const centerLng: string = ((farthestCoordinates.higestLng + farthestCoordinates.lowestLng)/2).toString();
-        return [centerLat, centerLng];
+    function fitDayPicturesBounds(): void {
+        mapRef.value?.leafletObject?.fitBounds(getPicturesLatLng.value);    
     }
 
-    function getFarthestCoordinates(): FarthestCoordinates {
-        let farthestCoordinates: FarthestCoordinates = {
-            higestLat: Number(pictureStore.pictures[0].lat),
-            lowestLat: Number(pictureStore.pictures[0].lat),
-            higestLng: Number(pictureStore.pictures[0].lng),
-            lowestLng: Number(pictureStore.pictures[0].lng)
-        }
-
-        pictureStore.pictures.forEach(picture => {
-            const pictureLat: number = Number(picture.lat);
-            const pictureLng: number = Number(picture.lng);
-
-            if (farthestCoordinates.higestLat < pictureLat) {
-                farthestCoordinates.higestLat = pictureLat;
-            }
-            if (farthestCoordinates.lowestLat > pictureLat) {
-                farthestCoordinates.lowestLat = pictureLat;
-            }
-            if (farthestCoordinates.higestLng < pictureLng) {
-                farthestCoordinates.higestLng = pictureLng;
-            }
-            if (farthestCoordinates.lowestLng > pictureLng) {
-                farthestCoordinates.lowestLng = pictureLng;
-            }
-        });
-        return farthestCoordinates;
+    function fitCurrentPictureBounds(): void {
+        if (props.currentPictureIndex === 0) {
+            mapRef.value?.leafletObject?.fitBounds([
+                [pictureStore.getCurrentPicture.value.lat, pictureStore.getCurrentPicture.value.lng]
+            ]);   
+        } else {
+            const previousPicture: Picture = getPreviousPicture(props.currentPictureIndex);
+            mapRef.value?.leafletObject?.fitBounds([
+                [previousPicture.lat, previousPicture.lng],
+                [pictureStore.getCurrentPicture.value.lat, pictureStore.getCurrentPicture.value.lng]
+            ]); 
+        }   
     }
+    
+    watch(
+        () => props.currentPictureIndex,
+        () => fitBounds()
+    );
 </script>
 <template>
     <l-map ref="map"
