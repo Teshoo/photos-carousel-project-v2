@@ -21,7 +21,9 @@ use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 #[ApiResource(
     operations: [
         new Get(),
-        new GetCollection(),
+        new GetCollection(
+            order: ['date' => 'ASC']
+        ),
         new Post(),
         new Put(),
         new Delete(),
