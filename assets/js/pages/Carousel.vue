@@ -94,7 +94,7 @@
 <template>
     <div 
         :class="$style.container"
-        v-if="!arePicturesLoading"
+        v-if="!arePicturesLoading && !areAllStagePicturesLoading && pictureStore.getCurrentPicture.value"
     >
         <div :class="$style.pictureSide">
             <div :class="$style.pictureInfo">

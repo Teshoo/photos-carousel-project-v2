@@ -4,15 +4,18 @@
     import 'leaflet/dist/leaflet.css';
     import type { Picture } from '@/js/types/types';
     import { usePictureStore } from '@/js/stores/PictureStore';
+    import { useDayStore } from '@/js/stores/DayStore';
     import { useHideoutStore } from '@/js/stores/HideoutStore';
 
     const currentMarkerUrl: string = '/assets/currentMarker.svg';
     const markerUrl: string = '/assets/marker.svg';
+    const inactiveMarkerUrl: string = '/assets/inactiveMarker.svg';
     const hideoutMarkerUrl: string = '/assets/shelterMarker.svg';
 
     const props = defineProps<{ currentPictureIndex: number }>();
 
     const pictureStore = usePictureStore();
+    const dayStore = useDayStore();
     const hideoutStore = useHideoutStore();
     const mapRef = useTemplateRef('map');
 
@@ -28,13 +31,16 @@
     
     const markerSize: Ref<[number, number]> = ref([15, 15]);
     const currentMarkerSize: Ref<[number, number]> = ref([25, 25]);
+    const inactiveMarkerSize: Ref<[number, number]> = ref([10, 10]);
     const hideoutSize: Ref<[number, number]> = ref([30, 30]);
 
     const markerZIndex: Ref<number> = ref(1500);
     const currentMarkerZIndex: Ref<number> = ref(1000);
+    const inactiveMarkerZIndex: Ref<number> = ref(300);
     const hideoutZIndex: Ref<number> = ref(400);
 
     const polylineColor: Ref<string> = ref('#FF5470');
+    const inactivePolylineColor: Ref<string> = ref('#808080');
     const polylineDashArray: Ref<string> = ref('1 4');
     const polylineDashOffset: Ref<string> = ref('20');
 
@@ -49,10 +55,21 @@
     const getAllStagePicturesLatLng = computed<number[][]>(() => {
         const allStagepicturesLatLng: number[][] = [];
         pictureStore.getAllStagePictures.value.forEach(
-            picture => allStagepicturesLatLng.push([Number(picture.lat), Number(picture.lng)])
-        );
+            day => day.forEach(
+                picture => allStagepicturesLatLng.push([Number(picture.lat), Number(picture.lng)])
+        ));
         return allStagepicturesLatLng;
     });
+
+    const getCurrentDayIndex = computed<number>(() => {
+        let dayIndex: number = 0;
+        dayStore.getDays.value.forEach((day, index) => {
+            if (day.id === dayStore.getCurrentDay.value.id) {
+                dayIndex = index;
+            } 
+        });
+        return dayIndex;
+    })
 
     // BOOLEANS
 
@@ -68,11 +85,15 @@
         return index <= props.currentPictureIndex;
     }
 
+    function isDayVisible(index: number): boolean {
+        return index < getCurrentDayIndex.value;
+    }
+
     // METHODS
 
-    function setPolylineStart(picture: Picture, index: number): [string, string] {
+    function setPolylineStart(dayPictures: Picture[], picture: Picture, index: number): [string, string] {
         if (index > 0) {
-            return [getPreviousPicture(index).lat, getPreviousPicture(index).lng];
+            return [getPreviousPicture(dayPictures, index).lat, getPreviousPicture(dayPictures, index).lng];
         } else {
             return [picture.lat, picture.lng];
         }
@@ -86,8 +107,8 @@
         }
     }
 
-    function getPreviousPicture(index: number): Picture {
-        return pictureStore.getPictures.value[index-1];
+    function getPreviousPicture(dayPictures: Picture[], index: number): Picture {
+        return dayPictures[index-1];
     }
 
     function fitDayPicturesBounds(): void {
@@ -100,12 +121,12 @@
                 [pictureStore.getCurrentPicture.value.lat, pictureStore.getCurrentPicture.value.lng]
             ]);   
         } else {
-            const previousPicture: Picture = getPreviousPicture(props.currentPictureIndex);
+            const previousPicture: Picture = getPreviousPicture(pictureStore.getPictures.value, props.currentPictureIndex);
             mapRef.value?.leafletObject?.fitBounds([
                 [previousPicture.lat, previousPicture.lng],
                 [pictureStore.getCurrentPicture.value.lat, pictureStore.getCurrentPicture.value.lng]
             ]); 
-        }   
+        }
     }
     
     watch(
@@ -151,7 +172,7 @@
             <div v-if="!isFirstPicture(index)">
                 <l-polyline
                     :lat-lngs="[
-                        setPolylineStart(picture, index),
+                        setPolylineStart(pictureStore.getPictures.value, picture, index),
                         [picture.lat, picture.lng]
                     ]"
                     :color="polylineColor"
@@ -159,6 +180,32 @@
                     :dash-offset="polylineDashOffset"
                     :visible="isPolylineVisible(index)"
                 />
+            </div>
+        </div>
+        <div v-for="(day, dayIndex) in pictureStore.getAllStagePictures.value">
+            <div v-for="(picture, pictureIndex) in day">
+                <l-marker
+                    :lat-lng="[picture.lat, picture.lng]"
+                    :z-index-offset="inactiveMarkerZIndex"
+                    :visible="isDayVisible(dayIndex)"
+                >
+                    <l-icon
+                        :icon-url="inactiveMarkerUrl"
+                        :icon-size="inactiveMarkerSize"
+                    />
+                </l-marker>
+                <div v-if="!isFirstPicture(pictureIndex)">
+                    <l-polyline
+                        :lat-lngs="[
+                            setPolylineStart(day, picture, pictureIndex),
+                            [picture.lat, picture.lng]
+                        ]"
+                        :color="inactivePolylineColor"
+                        :dash-array="polylineDashArray"
+                        :dash-offset="polylineDashOffset"
+                        :visible="isDayVisible(dayIndex)"
+                    />
+                </div>
             </div>
         </div>
         <l-marker v-for="hideout in hideoutStore.getHideouts.value"

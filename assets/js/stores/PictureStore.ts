@@ -3,17 +3,15 @@ export {}
 import { computed, ref, type Ref } from 'vue';
 import { defineStore } from 'pinia';
 import type { Picture } from '@/js/types/types';
-import { useStageStore } from './StageStore';
-import { useDayStore } from './DayStore';
-import { createPicture, deletePicture, fetchPictures, fetchStagePictures, updatePicture } from '@/js/services/picture.service';
+import { useDayStore } from '@/js/stores/DayStore';
+import { createPicture, deletePicture, fetchPictures, updatePicture } from '@/js/services/picture.service';
 
 export const usePictureStore = defineStore('Picture', () => {
-    const stageStore = useStageStore();
     const dayStore = useDayStore();
 
     // STATES
     const pictures: Ref<Picture[]> = ref([]);
-    const allStagePictures: Ref<Picture[]> = ref([]);
+    const allStagePictures: Ref<[Picture[]]> = ref([[]]);
     const currentPicture: Ref<Picture> = ref({
         id: -1,
         name: '',
@@ -27,7 +25,7 @@ export const usePictureStore = defineStore('Picture', () => {
 
     // GETTERS
     const getPictures = computed<Ref<Picture[]>>(() => pictures);
-    const getAllStagePictures = computed<Ref<Picture[]>>(() => allStagePictures);
+    const getAllStagePictures = computed<Ref<[Picture[]]>>(() => allStagePictures);
     const getCurrentPicture = computed<Ref<Picture>>(() => currentPicture);
     
     // ACTIONS
@@ -36,7 +34,19 @@ export const usePictureStore = defineStore('Picture', () => {
     }
 
     async function browseAllStagePictures(): Promise<void> {
-        allStagePictures.value = await fetchStagePictures(stageStore.getCurrentStage.value.id);
+        let allPictures$!: [Picture[]];
+
+        await dayStore.getDays.value.reduce(async (promise, day) => {
+            await promise;
+            const pictures = await fetchPictures(day.id);
+            if (!allPictures$) {
+                allPictures$ = [pictures];
+            } else  {
+                allPictures$.push(pictures);
+            }
+        }, Promise.resolve());
+
+        allStagePictures.value = allPictures$;
     }
 
     async function newPicture(picture: Picture, imageFile: File): Promise<void> {
