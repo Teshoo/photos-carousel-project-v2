@@ -86,7 +86,7 @@
         () => dayStore.getCurrentDay.value,
         () => { 
             arePicturesLoading.value = true;
-            currentPictureIndex.value = 0;
+            currentPictureIndex.value = -1;
             browsePictures();
         }
     )
@@ -177,7 +177,7 @@
             </div>
             <div :class="$style.mapContainer">
                 <CarouselMap 
-                    :currentPictureIndex = "currentPictureIndex"
+                    v-model:current-picture-index = "currentPictureIndex"
                 />
             </div>
         </div>

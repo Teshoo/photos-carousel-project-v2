@@ -12,7 +12,7 @@
     const inactiveMarkerUrl: string = '/assets/inactiveMarker.svg';
     const hideoutMarkerUrl: string = '/assets/shelterMarker.svg';
 
-    const props = defineProps<{ currentPictureIndex: number }>();
+    const currentPictureIndex = defineModel<number>('currentPictureIndex', { required: true });
 
     const pictureStore = usePictureStore();
     const dayStore = useDayStore();
@@ -20,8 +20,8 @@
     const mapRef = useTemplateRef('map');
 
     const isPictureIndex = computed<boolean>(
-        () =>   props.currentPictureIndex !== -1 
-                && props.currentPictureIndex !== pictureStore.getPictures.value.length
+        () =>   currentPictureIndex.value !== -1 
+                && currentPictureIndex.value !== pictureStore.getPictures.value.length
     );
 
     // MAP ATTRIBUTES
@@ -78,11 +78,11 @@
     }
 
     function isMarkerVisible(index: number): boolean {
-        return index < props.currentPictureIndex;
+        return index < currentPictureIndex.value;
     }
 
     function isPolylineVisible(index: number): boolean {
-        return index <= props.currentPictureIndex;
+        return index <= currentPictureIndex.value;
     }
 
     function isDayVisible(index: number): boolean {
@@ -116,22 +116,35 @@
     }
 
     function fitCurrentPictureBounds(): void {
-        if (props.currentPictureIndex === 0) {
+        if (currentPictureIndex.value === 0) {
             mapRef.value?.leafletObject?.fitBounds([
                 [pictureStore.getCurrentPicture.value.lat, pictureStore.getCurrentPicture.value.lng]
             ]);   
         } else {
-            const previousPicture: Picture = getPreviousPicture(pictureStore.getPictures.value, props.currentPictureIndex);
+            const previousPicture: Picture = getPreviousPicture(pictureStore.getPictures.value, currentPictureIndex.value);
             mapRef.value?.leafletObject?.fitBounds([
                 [previousPicture.lat, previousPicture.lng],
                 [pictureStore.getCurrentPicture.value.lat, pictureStore.getCurrentPicture.value.lng]
             ]); 
         }
     }
+
+    function updateCurrentPictureIndex(index: number): void {
+        currentPictureIndex.value = index;
+    }
+
+    function updateCurrentPicture(): void {
+        if (isPictureIndex.value) {
+            pictureStore.changeCurrentPicture(pictureStore.getPictures.value[currentPictureIndex.value]);
+        }
+    }
     
     watch(
-        () => props.currentPictureIndex,
-        () => fitBounds()
+        () => currentPictureIndex.value,
+        () => {
+            updateCurrentPicture();
+            fitBounds();
+        }
     );
 </script>
 <template>
@@ -163,6 +176,7 @@
                 :lat-lng="[picture.lat, picture.lng]"
                 :z-index-offset="markerZIndex"
                 :visible="isMarkerVisible(index)"
+                @click="updateCurrentPictureIndex(index)"
             >
                 <l-icon
                     :icon-url="markerUrl"
