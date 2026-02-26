@@ -18,6 +18,9 @@ use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 
 #[ORM\Entity(repositoryClass: TripStageRepository::class)]
 #[ApiResource(
+    extraProperties: [
+        'standard_put' => false,
+    ],
     operations: [
         new Get(),
         new GetCollection(),

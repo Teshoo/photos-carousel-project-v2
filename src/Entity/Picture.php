@@ -25,6 +25,9 @@ use Vich\UploaderBundle\Mapping\Annotation as Vich;
 #[ORM\Entity(repositoryClass: PictureRepository::class)]
 #[Vich\Uploadable]
 #[ApiResource(
+    extraProperties: [
+        'standard_put' => false,
+    ],
     normalizationContext: ['groups' => ['picture:read']], 
     denormalizationContext: ['groups' => ['picture:write']], 
     operations: [

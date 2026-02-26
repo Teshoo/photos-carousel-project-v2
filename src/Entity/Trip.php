@@ -16,6 +16,9 @@ use ApiPlatform\Metadata\Delete;
 
 #[ORM\Entity(repositoryClass: TripRepository::class)]
 #[ApiResource(
+    extraProperties: [
+        'standard_put' => false,
+    ],
     operations: [
         new Get(),
         new GetCollection(),
