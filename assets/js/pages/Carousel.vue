@@ -18,6 +18,7 @@
     const arePicturesLoading: Ref<boolean> = ref(true);
     const areAllStagePicturesLoading: Ref<boolean> = ref(true);
     const areHideoutsLoading: Ref<boolean> = ref(true);
+    const isDayPlaying: Ref<boolean> = ref(false);
     const currentPictureIndex: Ref<number> = ref(-1);
 
     browsePictures();
@@ -178,6 +179,7 @@
             <div :class="$style.mapContainer">
                 <CarouselMap 
                     v-model:current-picture-index = "currentPictureIndex"
+                    v-model:is-day-playing = "isDayPlaying"
                 />
             </div>
         </div>

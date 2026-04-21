@@ -13,6 +13,7 @@
     const hideoutMarkerUrl: string = '/assets/shelterMarker.svg';
 
     const currentPictureIndex = defineModel<number>('currentPictureIndex', { required: true });
+    const isDayPlaying = defineModel<boolean>('isDayPlaying', { required: true });
 
     const pictureStore = usePictureStore();
     const dayStore = useDayStore();
@@ -100,8 +101,12 @@
     }
 
     function fitBounds(): void {
-        if (!isPictureIndex.value) {   
-            fitDayPicturesBounds();                 
+        if (!isPictureIndex.value) {
+            if (!isDayPlaying) {
+                fitStagePicturesBounds();
+            } else {
+                fitDayPicturesBounds();  
+            }               
         } else {
             fitCurrentPictureBounds();
         }
@@ -113,6 +118,10 @@
 
     function fitDayPicturesBounds(): void {
         mapRef.value?.leafletObject?.fitBounds(getPicturesLatLng.value);    
+    }
+
+    function fitStagePicturesBounds(): void {
+        mapRef.value?.leafletObject?.fitBounds(getAllStagePicturesLatLng.value);    
     }
 
     function fitCurrentPictureBounds(): void {
