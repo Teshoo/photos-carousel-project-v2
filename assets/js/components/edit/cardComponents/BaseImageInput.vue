@@ -17,12 +17,8 @@
         if (fileInput.value !== null) {
             const files: FileList | null = fileInput.value.files;
             if (files && files[0]) {
-                const reader = new FileReader;
-                reader.onload = e => {
-                    imageData.value = e.target?.result;
-                }
-                reader.readAsDataURL(files[0]);
-                imageFile.value = files[0]; 
+                imageData.value = URL.createObjectURL(files[0]);
+                imageFile.value = files[0];
             }
         }
     }

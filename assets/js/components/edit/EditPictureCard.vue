@@ -62,15 +62,17 @@
     async function createPicture(): Promise<void> {
         if (isNewPicture.value) {
             isMapVisible.value = false;
-            await pictureStore.newPicture(pictureToEdit.value, imageFile.value);
+            const resizedImageFile: File = await resizeImage(imageFile.value);
+            await pictureStore.newPicture(pictureToEdit.value, resizedImageFile);
             emit('noPictureCreating');
         }
     }
 
-    function editPicture(): void {
+    async function editPicture(): Promise<void> {
         if (isPictureModified.value) {
             if (imageFile.value !== null) {
-                pictureStore.replacePicture(pictureToEdit.value, imageFile.value);
+                const resizedImageFile: File = await resizeImage(imageFile.value);
+                pictureStore.replacePicture(pictureToEdit.value, resizedImageFile);
             } else {
                 pictureStore.editPicture(pictureToEdit.value);
             }
@@ -79,6 +81,48 @@
 
     function removePicture(): void {
         pictureStore.removePicture(pictureToEdit.value);
+    }
+
+    async function resizeImage(imageFile: File): Promise<File> {
+        return new Promise((resolve) => {
+            const img: HTMLImageElement = new Image();
+            const url: string = URL.createObjectURL(imageFile);
+            const imageWidthMax: number = 1000;
+            const imageHeightMax: number = 1000;
+
+            img.onload = () => {
+                const canvas: HTMLCanvasElement = document.createElement('canvas');
+                const ctx: CanvasRenderingContext2D | null = canvas.getContext('2d');
+                
+                if (img.width > imageWidthMax) {
+                    img.height = img.height * (imageWidthMax / img.width);
+                    img.width = imageWidthMax;
+                }
+            
+                if (img.height > imageHeightMax) {
+                    img.width = img.width * (imageHeightMax / img.height);
+                    img.height = imageHeightMax;
+                }
+            
+                canvas.width = img.width;
+                canvas.height = img.height;
+            
+                if (ctx) {
+                    ctx.drawImage(img, 0, 0, img.width, img.height);
+                }
+                
+                canvas.toBlob((blob) => {
+                    if (blob) {
+                        const resizedImageFile: File = new File([blob], imageFile.name, {
+                            type: "image/jpeg",
+                        });
+                        resolve(resizedImageFile);
+                    }
+                }, "image/jpeg", 0.8);
+                URL.revokeObjectURL(url);
+            }
+            img.src = url;
+        });   
     }
 </script>
 
