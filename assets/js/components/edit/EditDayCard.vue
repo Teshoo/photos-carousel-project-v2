@@ -2,14 +2,12 @@
     import { computed, ref, type Ref } from 'vue';
     import { useRouter } from 'vue-router';
     import type { TripDay } from '@/js/types/types';
-    import { useTripStore } from '@/js/stores/TripStore';
     import { useDayStore } from '@/js/stores/DayStore';
     import { useHideoutStore } from '@/js/stores/HideoutStore';
     import { cloneDay } from '@/js/services/day.service';
     import ActionButton from '@/js/components/core/buttons/ActionButton.vue';
 
     const router = useRouter();
-    const tripStore = useTripStore();
     const dayStore = useDayStore();
     const hideoutStore = useHideoutStore();
 
