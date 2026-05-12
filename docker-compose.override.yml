@@ -1,8 +1,11 @@
+name: photo-carousel-project_dev
+
 services:
   php:
-    image: ${IMAGES_PREFIX:-}photo-carousel-project
+    image: ${IMAGES_PREFIX:-}photo-carousel-project_dev
     build:
       context: .
+      dockerfile: docker/dev.Dockerfile
       target: frankenphp_dev
     volumes:
       - ./:/app

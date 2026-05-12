@@ -1,0 +1,14 @@
+services:
+  php:
+    image: ${IMAGES_PREFIX:-}photo-carousel-project
+    build:
+      context: .
+      dockerfile: docker/prod.Dockerfile
+      target: frankenphp_prod
+    environment:
+      APP_SECRET: ${APP_SECRET}
+      MERCURE_PUBLISHER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET}
+      MERCURE_SUBSCRIBER_JWT_KEY: ${CADDY_MERCURE_JWT_SECRET}
+  database:
+    ports:
+      - "5432"
