@@ -41,4 +41,4 @@ This project is an **rework of a [first version](https://github.com/Teshoo/photo
 ![](https://i.ibb.co/0JjBWD7/demo-update-latlng.gif)
 
 ## Docker image
-[Docker image available](https://hub.docker.com/repository/docker/teshoo/photo-carousel-project)
+[Docker image available](https://hub.docker.com/r/teshoo/photo-carousel-project)
