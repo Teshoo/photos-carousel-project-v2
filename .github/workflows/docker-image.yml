@@ -6,7 +6,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: teshoo\/photos-carousel-project
+  IMAGE_NAME: teshoo/photos-carousel-project
 
 jobs:
   build-and-push:
@@ -36,14 +36,10 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: build image
-        run: docker compose -f docker-compose.yml -f docker-compose.prod.yml build --pull
+        run: docker compose -f docker-compose.yml -f docker-compose.prod.yml build --pull --provenance=mode=max
 
       - name: push image to Github Packages
         run: |
           docker image tag photo-carousel-project:latest ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           docker image push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
-      - name: Generate artifact attestation
-        uses: actions/attest@v4
-        with:
-          subject-path: ${{ github.workspace }}/${{ env.IMAGE_NAME }}
