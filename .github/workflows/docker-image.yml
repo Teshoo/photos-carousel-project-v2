@@ -36,12 +36,12 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: build image
-        run: docker compose -f docker-compose.yml -f docker-compose.prod.yml build --pull --tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+        run: docker compose -f docker-compose.yml -f docker-compose.prod.yml build --pull --t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
       - name: push image to Docker Hub
         run: |
           docker push teshoo/photo-carousel-project:latest
-
+          
       - name: Generate artifact attestation
         uses: actions/attest@v4
         with:
