@@ -36,10 +36,9 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: build image
-        run: docker compose -f docker-compose.yml -f docker-compose.prod.yml build --pull --provenance=mode=max
+        run: docker buildx bake -f docker-compose.yml -f docker-compose.prod.yml --pull --provenance=mode=max
 
       - name: push image to Github Packages
         run: |
           docker image tag photo-carousel-project:latest ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           docker image push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-
