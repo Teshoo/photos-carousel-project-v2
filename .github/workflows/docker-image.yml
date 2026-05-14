@@ -46,4 +46,4 @@ jobs:
       - name: Generate artifact attestation
         uses: actions/attest@v4
         with:
-          subject-path: ${{ github.workspace }}/${{ github.repository }}
+          subject-path: ${{ github.workspace }}/${{ env.IMAGE_NAME }}
