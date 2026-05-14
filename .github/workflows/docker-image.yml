@@ -39,8 +39,7 @@ jobs:
         run: docker compose -f docker-compose.yml -f docker-compose.prod.yml build --pull
 
       - name: push image to Github Packages
-        run: |
-          docker push photo-carousel-project:latest
+        run: docker image push photo-carousel-project:latest ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
 
       - name: Generate artifact attestation
         uses: actions/attest@v4
