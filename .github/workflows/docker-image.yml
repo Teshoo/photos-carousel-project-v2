@@ -9,31 +9,6 @@ env:
   IMAGE_NAME: teshoo/photos-carousel-project
 
 jobs:
-  build-front:
-    name: Build frontend
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v6
-
-      - name: Setup Node
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build project
-        run: npm run build
-
-      - name: Copy frontend build
-        run: |
-          rm -rf public/build
-          mkdir -p public/build
-          cp -r dist/* public/build/
-
   build-and-push:
     runs-on: ubuntu-latest
 
@@ -46,6 +21,17 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
 
       - name: Log in to the container registry
         uses: docker/login-action@v4
