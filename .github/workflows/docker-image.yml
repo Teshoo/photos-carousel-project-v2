@@ -28,6 +28,12 @@ jobs:
       - name: Build project
         run: npm run build
 
+      - name: Copy frontend build
+        run: |
+          rm -rf public/build
+          mkdir -p public/build
+          cp -r dist/* public/build/
+
   build-and-push:
     runs-on: ubuntu-latest
 
